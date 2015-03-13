@@ -1,0 +1,47 @@
+
+
+/********** 16. BUG TRACKER **********/
+/*************************************/
+
+
+.panel .panel-table {
+  padding: 0;
+}
+
+.panel-table .table {
+  .noshadow();
+  margin: 0;
+}
+
+.table-buglist {
+  thead tr th:first-child, tbody tr td:first-child {
+    text-align: center;
+    width: 30px;
+  }
+  .fa {
+    cursor: pointer;
+  }
+  .fa-bug {
+    color: @danger-color;
+  }
+  .fa-magic {
+    color: @success-color;
+  }
+  .btn-group {
+    margin: 0;
+    .dropdown-toggle {
+      color: #999999;
+      cursor: pointer;
+    }
+    .dropdown-toggle:hover {
+      color: #666666;
+    }
+  }
+}
+
+.bug-key-title {
+  margin: 0;
+  margin-bottom: 5px;
+}
+
+

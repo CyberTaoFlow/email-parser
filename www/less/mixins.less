@@ -1,0 +1,25 @@
+// Mixins
+
+.transition() {
+  -moz-transition: all 0.2s ease-out 0s;
+  -webkit-transition: all 0.2s ease-out 0s;
+  transition: all 0.2s ease-out 0s;
+}
+
+.border-radius(@radius: 3px) {
+  -moz-border-radius: @radius;
+  -webkit-border-radius: @radius;
+  border-radius: @radius;
+}
+
+.noshadow() {
+  -moz-box-shadow: none;
+  -webkit-box-shadow: none;
+  box-shadow: none;
+}
+
+.box-shadow(@style, @c) {
+  -moz-box-shadow:    @style @c;
+  -webkit-box-shadow: @style @c;
+  box-shadow:         @style @c;
+}

@@ -1,0 +1,85 @@
+<script>
+$("#indicator-form").submit(function(event){
+  var datastring = $("#indicator-form").serialize();
+  $.ajax({
+      type: 'POST',
+      url: 'inc/submit-indicator.php',
+      data: datastring,
+      dataType: 'json',
+      processData: true,
+      encode: true
+      })
+      .done(function(data) {
+          if (!data.success) {
+              if (data.errors.type) {
+                  badnews("Something didn't work:<br />" + data.errors.type);
+              }
+              if (data.errors.indicator) {
+                  badnews("Something didn't work:<br />" + data.errors.indicator);
+              }
+          } else {
+              goodnews("Great Success!");
+          }
+      })
+      .fail(function() {
+        badnews("Maybe a server error?");
+      })
+      .always(function() {
+      //  alert("ALWAYS");
+      });
+      event.preventDefault();
+});
+
+function goodnews (message) {
+  jQuery.gritter.add({
+    title: 'Indicator Added!',
+    text: message,
+    class_name: 'growl-success',
+    image: 'images/screen.png',
+    sticky: false,
+    time: ''
+  });
+}
+
+function badnews (message) {
+  jQuery.gritter.add({
+    title: 'Error!',
+    text: message,
+    class_name: 'growl-danger',
+    image: 'images/screen.png',
+    sticky: false,
+    time: ''
+  });
+}
+</script>
+
+	<div class="modal-header">
+	<button aria-hidden="true" data-dismiss="modal" class="close" type="button">&times;</button>
+	<h4 class="modal-title"><i class="fa fa-crosshairs" style="margin-right:15px;"></i> Submit Indicator To Database</h4>
+	</div>
+	<div class="modal-body">
+		<form id="indicator-form" class="form-inline">
+			<div class="col-sm-4">
+			<div class="form-group">
+					<span class="label label-primary">Type of Indicator</span>
+					<select name="type" class="form-control">
+                  <option value="email">E-Mail</option>
+                  <option value="ipaddr">IP Address</option>
+                  <option value="cidr">CIDR</option>
+          </select>
+				</div>
+				</div>
+
+			<div class="form-group">
+				<div class="col-sm-8">
+					<span class="label label-danger">Indicator</span>
+					<input name="indicator" class="form-control" placeholder="Indicator">
+				</div>
+			</div>
+			<div class="mb15"></div>
+      <button class="btn btn-primary" type="submit">Add to Database</button>
+			</form>
+
+	</div>
+	<div class="clearfix mb50"></div>
+</div>

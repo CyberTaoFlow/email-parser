@@ -1,0 +1,254 @@
+
+@import "variables.less";
+@import "mixins.less";
+
+@dodgerblue: #2a6fa8;
+
+body, .fixed section {
+  background: #202122;
+}
+
+.logopanel {
+  background-color: @dodgerblue;
+  h1 {
+    color: #ffffff;
+    span {
+      color: #7bb7eb;
+    }
+  }
+}
+
+.headerbar {
+  background-color: @dodgerblue;
+  border-left-color: rgba(255,255,255,0.1);
+}
+
+.menutoggle {
+  color: #ffffff;
+  border-right-color: rgba(255,255,255,0.1);
+}
+
+.rtl .menutoggle {
+  border-left: 1px solid rgba(255,255,255,0.15);
+}
+
+.rtl .searchform input {
+  margin-left: 0;
+  margin-right: 8px;
+}
+
+.menutoggle:hover {
+  background-color: rgba(0,0,0,0.1);
+  border-right-color: rgba(255,255,255,0.15);
+  color: #ffffff;
+}
+
+.searchform input {
+  height: auto;
+  padding: 7px 10px;
+  margin: 8px 0 0 8px;
+  .border-radius(2px);
+  border: 0;
+}
+
+.headermenu {
+  .dropdown-toggle:hover,
+  .dropdown-toggle:focus,
+  .dropdown-toggle:active,
+  .dropdown-toggle.active,
+  .open .dropdown-toggle.dropdown-toggle {
+    background-color: rgba(0,0,0,0.1);
+    color: #ffffff;
+  }
+  .tp-icon {
+    background: none;
+    border: 0;
+    color: #ffffff;
+  }
+  > li {
+    border-left-color: rgba(255,255,255,0.1);
+  }
+  .chat-icon:hover {
+    background-color: rgba(0,0,0,0.1);
+  }
+  .dropdown-toggle {
+    background: none;
+    color: #ffffff;
+  }
+  .dropdown-menu-usermenu li a:hover {
+    background-color: @dodgerblue;
+  }
+  .dropdown-menu:after {
+    border-bottom-color: #202122;
+  }
+  > li:first-child {
+    border-color: rgba(255,255,255,0.1);
+  }
+}
+
+.dropdown-menu-head .title, .headermenu .dropdown-menu-usermenu {
+  background-color: #202122;
+}
+
+.leftpanelinner .searchform input {
+  background-color: #ffffff;
+}
+
+
+/*** LEFT PANEL ***/
+
+
+.nav-bracket > li > a > .badge {
+  background-color: @dodgerblue;
+}
+
+.nav-bracket .children > li {
+  > a:hover, > a:active, > a:focus {
+    color: @dodgerblue;
+  }
+}
+
+.nav-bracket .children > li.active > a {
+  color: @dodgerblue;
+}
+
+.nav-bracket > li.active {
+  > a, > a:hover, > a:focus {
+    background-color: @dodgerblue;
+  }
+}
+
+.leftpanel-collapsed .nav-bracket > li.nav-hover.active > a {
+  > span:last-child {
+    background-color: @dodgerblue;
+  }
+}
+
+.leftpanel-collapsed .nav-bracket li.nav-hover ul {
+  background-color: #202122;
+}
+
+.headerbar .topnav > ul {
+  > li > a:focus, > li.open > a, > li.active > a {
+    color: #ffffff;
+    .noshadow();
+    background-color: rgba(0,0,0,0.1);
+  }
+  > li > a {
+    color: #ffffff;
+    border-right: 1px solid rgba(255,255,255,0.1);
+    padding-top: 16px;
+    padding-bottom: 16px;
+  }
+  > li > a:hover {
+    background-color: rgba(0,0,0,0.1);
+    background-color: rgba(0,0,0,0.1);
+    color: #ffffff;
+    .noshadow();
+  }
+  > li .dropdown-menu > li > a:hover {
+    background-color: @dodgerblue;
+  }
+}
+
+.headerbar .logopanel {
+  border-right-color: rgba(255,255,255,0.1);
+}
+
+
+/*** MAIN PANEL ***/
+
+
+.mainpanel {
+  background-color: #ffffff;
+}
+
+.panel-default {
+  border: 1px solid #d7d7d7;
+}
+
+.panel-primary .panel-body,
+.panel-success .panel-body,
+.panel-warning .panel-body,
+.panel-info .panel-body,
+.panel-danger .panel-body,
+.panel-dark .panel-body {
+  border:1px solid #d7d7d7;
+  border-top:0;
+  .border-radius(0 0 3px 3px);
+}
+
+.panel-primary .panel-footer {
+  border: 1px solid #d7d7d7;
+  border-top: 0;
+}
+
+.panel-heading p {
+  margin-top: 5px;
+}
+
+.panel-dark .panel-heading,
+.widget-profile .row > div > span,
+.widget-weather .panel-body {
+  background-color: #202122;
+}
+
+.table-email > tbody > tr > td {
+  border: 1px solid #e3e3e3;
+}
+
+.blog-details {
+  border: 1px solid #eeeeee;
+  border-top: 0;
+}
+
+.panel-blog {
+  border: 0;
+  background: none;
+  .noshadow();
+  .panel-body {
+    padding: 0;
+  }
+}
+
+.letter-list {
+  border: 1px solid #dddddd;
+  .border-radius();
+}
+
+.people-item {
+  border: 1px solid #e3e3e3;
+}
+
+.signin-info .logopanel h1, .signup-info .logopanel h1 {
+  color: #333333;
+}
+
+.feat-list h4 {
+  color: @primary-color-hover;
+}
+
+
+/*** RIGHT PANEL ***/
+
+
+.rightpanel .nav-tabs {
+  background-color: #141415;
+  > li > a:hover, > li > a:focus, > .active > a, > .active > a:hover, > .active > a:focus {
+    background-color: #202122;
+  }
+}
+
+.filemanager-options {
+  border: 1px solid #d7d7d7;
+}
+
+.filemanager .thmb {
+  border-color: #d7d7d7;
+}
+
+.fm-sidebar .tag-list li a {
+  background-color: #eeeeee;
+}
+
+
