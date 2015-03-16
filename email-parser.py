@@ -1,14 +1,9 @@
 #!/usr/bin/env python
 
 # BY GALARNEAU, HAYES, PULSIFER
-# ATTEMPTED PEP8 PYTHON EMAIL PARSING
 
 # TODO
-# output (logs, to terminal for stats .etc)
-#   things like --top10 --stats --changedtoday
-# stats
-#   things like --top10 --uniq things
-# db cleanup?
+# retention
 
 # REQUIRED FOR USAGE
 # Watch out for old versions of python-magic in both /lib and /lib64
@@ -37,8 +32,6 @@ import zipfile
 import zlib
 # Functions to help with parsing command line arguments
 from optparse import OptionParser, OptionGroup
-# Function to help sort lists
-from operator import itemgetter
 
 # Enables us to interact with databases (MySQL (EL6) and Maria (EL7))
 import MySQLdb
@@ -75,6 +68,15 @@ file_shortcuts = [ ".inf", ".lnk", ".reg",".scf"]
 
 # A list of lists!
 file_extensions = [file_exe, file_google, file_macros, file_script, file_shortcuts]
+
+def CheckExtension(self, filename):
+    # Function to check the file extension of an attachment
+    for ext_category in file_extensions:
+        for ext in ext_category:
+            # If we've found the droids we're looking for
+            if filename.lower().endswith(ext):
+                return SUSPICION_BAD_EXTENSION
+    return 0
 
 class db(object):
 	# This is the main database class; all interactions with
@@ -143,15 +145,6 @@ class db(object):
         query = "SELECT COUNT(email.id) AS count FROM attachments INNER JOIN email ON attachments.id=email.id"
 
         # self.Action(query)
-
-    def CheckExtension(self, filename):
-        # Function to check the file extension of an attachment
-        for ext_category in file_extensions:
-            for ext in ext_category:
-                # If we've found the droids we're looking for
-                if filename.lower().endswith(ext):
-                    return SUSPICION_BAD_EXTENSION
-        return 0
 
     def GetFile(self, hash):
         # This function fetches a file from the database
@@ -272,88 +265,6 @@ class db(object):
         statement = "UPDATE attachment SET suspicion = '%d' WHERE md5 = '%s'" % (new_suspicion, md5)
         self.Action(statement)
 
-    def StatsCampaigns(self):
-        pass
-
-    def StatsDomains(self, csv):
-        """ This function prints the user the top 25 domains responsible
-        for sending emails into our server[s] """
-
-        # Initialize some vars
-        domains = []
-        counter = 0
-        counter_end = 25
-
-        # Get all the senders
-        query = "SELECT sender from email"
-        results = self.Action(query)
-        for row in results:
-            # Take only the domain part of the email
-            domains.append(row['sender'].split("@")[1].lower())
-
-        # Make a tuple with the number of times each domain was seen
-        domains_counted = [(domain, domains.count(domain)) for domain in set(domains)]
-
-        # Sort the beast
-        domains_sorted = sorted(domains_counted, key=itemgetter(1), reverse=True)
-
-        # Adjust counter if database is new or uniq domains < 25
-        if not len(domains_sorted) > 25:
-            counter_end = len(domains_sorted)
-
-        # If user selected csv
-        if csv:
-            print "domain,emails_sent"
-            for domain, count in domains_sorted:
-                print domain + "," + str(count)
-        else:
-            # USER OUTPUT
-            print "Top", len(domains_sorted), "Sender Domains (max 25)\n"
-
-            # Print the user pretty things [results]
-            while counter < counter_end:
-                print("{:<20}{:<20}").format("Domain","Emails Sent")
-                print "-------------------------------"
-                for domain, count in domains_sorted:
-                    print ("{:<20}{:^20}".format(domain,str(count)))
-                    counter += 1
-
-    def StatsShowAnalyzed(self, csv):
-        """ This function will show you all files that have
-        been marked as analyzed, and who did it! """
-        query = "SELECT name, suspicion, bywho FROM attachments WHERE analyzed=1 ORDER BY bywho;"
-        results = self.Action(query)
-        if csv:
-            print "name,suspicion,analyst"
-            for row in results:
-                print row['name'] + "," + str(row['suspicion']) + "," + row['bywho']
-
-    def StatsTop10(self, csv):
-        """ This function prints the top 10 most suspicious
-        files submitted into the database """
-        query = "SELECT name, suspicion, md5 FROM attachments WHERE analyzed=0 ORDER BY suspicion DESC LIMIT 10;"
-        results = self.Action(query)
-
-        if csv:
-            print "md5sum,attachment_name,suspicion"
-            for row in results:
-                print row['md5'] + "," + row['name'] + "," + str(row['suspicion'])
-
-    def SubmitFile(self, file):
-        # NOT DONE YET
-        # DO WE EVEN NEED THIS?!?!
-        with open(file, 'rb') as f:
-            data = f.read()
-            gzdata = zlib.compress(data)
-            hash = hashlib.md5(data).hexdigest()
-            gzhash = hashlib.md5(gzdata).hexdigest()
-            statement = """INSERT INTO attachments (hash, payload)
-                           VALUES (MD5(%s), %s)"""
-            print "File hash:", hash, "File MB:", float(len(data))/1024/1024
-            print "GZ hash:", gzhash, "File MB:", float(len(gzdata))/1024/1024
-            # self.db.execute(statement, (data, ))
-        pass
-
     def ZippedAttachment(self, data):
         # Function to determine if a zipfile contains bad
 
@@ -389,6 +300,39 @@ class db(object):
         else:
             return False
 
+class meta(object):
+    def __init__(self):
+        # this function runs when the program is called
+        # not sure if we need to do anything here
+        pass
+    def generate(self, pcap):
+        # Grab all the emails from the PCAP file (via parse_smtp)
+        email_list = parse_smtp.EmailList(pcap)
+        # Iterate through the emails
+        for email_session in email_list.emails:
+            # Just making sure the email has attachments
+            if email_session.attachments:
+                # Insert metadata meow
+                statement = MySQLdb.escape_string(email_session.subject), MySQLdb.escape_string(email_session.plaintext)
+                print ip_to_uint32(email_session.ip_source), email_session.sport, ip_to_uint32(email_session.ip_dest), email_session.dport, email_session.sender.address, email_session.recipient_count, MySQLdb.escape_string(email_session.subject)
+
+                # Iterate through all the recipients of the email
+                recipient_list = []
+                for recipient in email_session.to:
+                    recipient_list.append(recipient.address)
+                for recipient in email_session.cc:
+                    recipient_list.append(recipient.address)
+
+                # prepare the statement
+                for address in recipient_list:
+                    statement = MySQLdb.escape_string(address)
+                    print statement
+
+                # Iterate through the attachments in the email
+                for attachment in email_session.attachments:
+                    # Each attachment gets a new suspicion
+                    suspicion = 0
+                    print attachment.filename
 
 def ip_to_uint32(ipaddr):
     # This function takes a bytestring and returns an INT
@@ -402,46 +346,34 @@ if __name__ == '__main__':
     usage = "usage: %prog [options]"
 
     # simple program description
-    desc = "This ultimate python pcap processing program will generate some outrageous SMTP metadata. If I were you, I wouldn't run a 16GB pcap file against this. Results my vary."
+    desc = "%prog parses individual PCAP files and outputs SMTP metadata to multiple formats. You can enhance the way you interact with this data by using the database and the web page."
 
     # Initialize the OptionParser
-    parser = OptionParser(usage, description=desc, version="%prog 0.2 by Galarneau, Hayes, Pulsifer")
+    parser = OptionParser(usage, description=desc, version="%prog 1.0 by github.com/JonPulsifer, github.com/JonGalarneau, Andrew Hayes")
 
     # Options for main program operation
     # COMMANDS TO TYPE IN -p or --pcap
-    parser.add_option("-p", "",
+    parser.add_option("-p",
                       # Destination variable will be options.pcapfile
                       dest="pcapfile",
                       # Message to show in -h or --help
                       help="Filename of the of the pcap to process")
-    parser.add_option("-d", "", dest="directory", help="Directory containing pcap files")
+    parser.add_option("-d", dest="directory", help="Directory containing pcap files")
+
+    # Options for output options
+    outputgroup = OptionGroup(parser, "Output Options", "Choose how you would like the data output to you.")
+
+    outputgroup.add_option("-o", dest="output", default="ascii", help="db, csv, ascii [default: %default]")
+
+    parser.add_option_group(outputgroup)
 
     # Options for the database
-    dbgroup = OptionGroup(parser, "Database Options", "The following options are to be used in conjunction with the MySQL database you have configured.")
+    dbgroup = OptionGroup(parser, "Database Options", "The following options are to be used in conjunction with the SQL database you have configured.")
 
-    dbgroup.add_option("-s", "", dest="sqlstatement", help="Statement to pass to MySQLdb")
-    # dbgroup.add_option("-F", "",
-    #                   dest="delim",
-    #                   help="Field output delimiter")
-    dbgroup.add_option("-m", "", dest="md5sum", help="md5sum of file to retrieve from database")
-    dbgroup.add_option("", "--analyzed", dest="analyzed", help="Once an md5 from --top10 has been analyzed, input it here so it no longer shows up!")
-    dbgroup.add_option("", "--showanalyzed", dest="showme", help="Show analyzed files, and who did it!")
+    dbgroup.add_option("-s", dest="sqlstatement", help="SQL SELECT query to pass to the database")
+    dbgroup.add_option("-m", dest="md5sum", help="md5sum of file to retrieve from database")
     # Add the database options to OptionParser
     parser.add_option_group(dbgroup)
-
-
-    # Options for stats and database returns
-    statsgroup = OptionGroup(parser, "Statistics", "The following options are to be used when a user requires stats. What are stats? Metrics? Unfortunately you'll have to generate your own pie charts.")
-
-    statsgroup.add_option("", "--top10", action="store_true", dest="top10", help="Print top 10 most suspicious emails (files) by md5")
-    statsgroup.add_option("", "--campaigns", action="store_true", dest="campaigns", help="Print out the phishing campaigns")
-    statsgroup.add_option("", "--domains", action="store_true", dest="domains", help="Print the top 25 domains where emails originated")
-    statsgroup.add_option("", "--howitworks", action="store_true", dest="printsuspicious", help="Display how suspicion is generated")
-    statsgroup.add_option("", "--csv", action="store_true", dest="csv", help="Change output format to CSV", default="1")
-    # statsgroup.add_option("", "", action="store_true", dest="", help="")
-
-    # Add the stats options to OptionParser
-    parser.add_option_group(statsgroup)
 
     # If the user didn't supply any arguments
     if len(sys.argv[1:]) == 0:
@@ -462,15 +394,19 @@ if __name__ == '__main__':
         if not os.path.isfile(options.pcapfile):
             parser.error("-p %s (the file you chose) must exist and be readable" % (options.pcapfile))
         # Insert metadata and attachments to the database
-        db().InsertMeta(options.pcapfile)
+        if options.output == "db":
+            db().InsertMeta(options.pcapfile)
+        else:
+            meta().generate(options.pcapfile)
 
     # Making sure the user actually has the directory
     if options.directory:
         if not os.path.isdir(options.directory):
             parser.error("-d %s (the directory you chose) must exist and be readable" % (options.directory))
 
-        # Initialize the database before the for loops (keeps the db open for all the pcaps)
-        database = db()
+        if options.output == "db":
+            # Initialize the database before the for loops (keeps the db open for all the pcaps)
+            database = db()
         # Find all the files that end in .pcap
         for root, dirs, files in os.walk(options.directory):
             for f in files:
@@ -478,7 +414,10 @@ if __name__ == '__main__':
                     fullpath = os.path.join(root, f)
                     # Insert metadata and attachments to the database
                     print "Processing:", fullpath
-                    database.InsertMeta(fullpath)
+                    if options.output == "db":
+                        database.InsertMeta(fullpath)
+                    else:
+                        meta().generate(fullpath)
 
     # Error handling for database options
     if options.md5sum and options.sqlstatement:
@@ -499,26 +438,3 @@ if __name__ == '__main__':
             db().GetFile(options.md5sum)
         else:
             parser.error("You must submit a valid MD5 for this function to proceed")
-
-    # Lets us analyze a file
-    if options.analyzed:
-        if re.match('[0-9a-fA-F]{32}$', options.analyzed):
-            db().AnalyzeFile(options.analyzed)
-        else:
-            parser.error("You must submit a valid MD5 for this function to proceed")
-
-    # Show us some stats!
-    if options.top10:
-        db().StatsTop10(options.csv) if options.csv else db().StatsTop10()
-
-    if options.campaigns:
-        db().StatsCampaigns()
-
-    if options.domains:
-        db().StatsDomains(options.csv) if options.csv else db().StatsDomains()
-
-    if options.printsuspicious:
-        print """ This """
-
-    if options.showme:
-        db().StatsShowAnalyzed(options.csv) if options.csv else db().StatsShowAnalyzed()
