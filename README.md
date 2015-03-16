@@ -26,42 +26,31 @@ Important Files
 * email-schema.sql
   * To prepare a MySQL (or Maria) DB for use with email metadata
 
-#### Some functionality
+#### Program Usage
 ```
 Usage: email-parser.py [options]
 
-This ultimate python pcap processing program will generate some outrageous
-SMTP metadata. If I were you, I wouldn't run a 16GB pcap file against this.
-Results my vary.
+email-parser.py parses individual PCAP files and outputs SMTP metadata to
+multiple formats. You can enhance the way you interact with this data by using
+the database and the web page.
 
 Options:
-  --version             show program's version number and exit
-  -h, --help            show this help message and exit
-  -p PCAPFILE           Filename of the of the pcap to process
-  -d DIRECTORY          Directory containing pcap files
+  --version          show program's version number and exit
+  -h, --help         show this help message and exit
+  -p PCAPFILE        Filename of the of the pcap to process
+  -d DIRECTORY       Directory containing pcap files
+
+  Output Options:
+    Choose how you would like the data output to you.
+
+    -o OUTPUT        db, csv, ascii [default: ascii]
 
   Database Options:
-    The following options are to be used in conjunction with the MySQL
+    The following options are to be used in conjunction with the SQL
     database you have configured.
 
-    -s SQLSTATEMENT     Statement to pass to MySQLdb
-    -m MD5SUM           md5sum of file to retrieve from database
-    --analyzed=ANALYZED
-                        Once an md5 from --top10 has been analyzed, input it
-                        here so it no longer shows up!
-    --showanalyzed=SHOWME
-                        Show analyzed files, and who did it!
-
-  Statistics:
-    The following options are to be used when a user requires stats. What
-    are stats? Metrics? Unfortunately you'll have to generate your own pie
-    charts.
-
-    --top10             Print top 10 most suspicious emails (files) by md5
-    --campaigns         Print out the phishing campaigns
-    --domains           Print the top 25 domains where emails originated
-    --howitworks        Display how suspicion is generated
-    --csv               Change output format to CSV
+    -s SQLSTATEMENT  SQL SELECT query to pass to the database
+    -m MD5SUM        md5sum of file to retrieve from database
 ```
 
 Credits
