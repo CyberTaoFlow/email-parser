@@ -5,15 +5,16 @@ Generating lots of useful SMTP metadata from pcaps containing SMTP (tcp.port == 
 
 Required Things
 -----
-* MySQL or MariaDB (MariaDB used for this project)
-* Python 2.x (2.7 used for this project)
+* MySQL or MariaDB (supports both)
+* Python 2.6 / 2.7
 * [MySQL-python](https://github.com/farcepest/MySQLdb1) (yum install MySQL-python || pip install mysql-python)
-* [dpkt](https://code.google.com/p/dpkt/) (v1.8 used for this project)
+* [dpkt 1.8](https://code.google.com/p/dpkt/) (easy_install dpkt)
 * [libmagic](https://github.com/threatstack/libmagic) (yum install libmagic)
 * [python-magic](https://github.com/ahupp/python-magic) (yum install python-magic || pip install python-magic)
-* [python-netaddr](https://github.com/drkjam/netaddr) (yum install python-netaddr || pip install python-netaddr)
+* GeoIP, GeoIP-devel, GeoIP-update (yum install)
+* [Python GeoIP](https://github.com/maxmind/geoip-api-python) (pip install GeoIP)
 * MySQL config change
-  * max_allowed_packet = __32M__ (database config default = 1M, attachments are bigger)
+  * max_allowed_packet = __25M__ (database config default = 1M, set the max to your organization's)
 
 Important Files
 -----
@@ -23,10 +24,11 @@ Important Files
   * Addresses TCP sessions (reordering, tracking, layer2-4 metadata)
 * parse_smtp.py
   * Uses parse_sessions.py, iterates through the PCAP file and extracts and parses all SMTP traffic into pretty things like email.sender, email.recipient, attachment.name, attachment.payload
-* email-schema.sql
+* schema.sql
   * To prepare a MySQL (or Maria) DB for use with email metadata
 
-#### Program Usage
+Program Usage
+-----
 ```
 Usage: email-parser.py [options]
 
@@ -43,7 +45,7 @@ Options:
   Output Options:
     Choose how you would like the data output to you.
 
-    -o OUTPUT        db, csv, ascii [default: ascii]
+    -o OUTPUT        db, csv, cef [default: cef]
 
   Database Options:
     The following options are to be used in conjunction with the SQL

@@ -15,8 +15,8 @@
 	}
 
 	$finfo = new finfo(FILEINFO_MIME);
-	$filetype = $finfo->buffer(zlib_decode($file['data']));
-	$filesize = strlen(zlib_decode($file['data']));
+	$filetype = $finfo->buffer(gzuncompress($file['data']));
+	$filesize = strlen(gzuncompress($file['data']));
 
 	echo '<div class="modal-header">';
 	echo '<button aria-hidden="true" data-dismiss="modal" class="close" type="button">&times;</button>';
@@ -30,7 +30,7 @@
 
 	if(substr($filetype, 0, 4) === "text"){
 		echo 'Sample of text:';
-		echo '<pre>', substr(nl2br(zlib_decode($file['data'])), 0, 512), '</pre>';
+		echo '<pre>', substr(nl2br(gzuncompress($file['data'])), 0, 512), '</pre>';
 	}
 
 	// todo:

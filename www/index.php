@@ -56,7 +56,7 @@ $currentcpuusage = get_server_cpu_usage();
 			<!-- <h5 class="sidebartitle">Navigation</h5> -->
 			<ul class="nav nav-pills nav-stacked nav-bracket">
 				<li class="active"><a href="#"><i class="fa fa-home"></i> <span>Dashboard</span></a></li>
-				<li><a href="tables.php"><i class="fa fa-database"></i> <span>Database Query</span></a></li>
+				<li><a href="tables.php"><i class="fa fa-database"></i> <span>Database</span></a></li>
 				<li><a href="inc/submit-indicator.html" data-toggle="modal" data-target=".external-modal"><i class="fa fa-crosshairs"></i> <span>Submit Indicator</span></a></li>
 				<li><a href="#" data-toggle="modal" data-target=".upload-modal"><i class="fa fa-upload"></i> <span>Upload PCAP</span></a></li>
 				<li><a href="suspicion.html" data-toggle="modal" data-target=".external-modal-lg"><i class="fa fa-question"></i> <span>How Suspicion Works</span></a></li>
@@ -128,7 +128,7 @@ $currentcpuusage = get_server_cpu_usage();
 				<div class="contentpanel">
 					<!-- content goes here... -->
 					<div class="row">
-						<div class="col-md-3">
+						<div class="col-md-5">
 							<div class="panel panel-dark panel-stat">
 								<div class="panel-heading">
 									<div class="stat" style="max-width:inherit;">
@@ -157,7 +157,7 @@ $currentcpuusage = get_server_cpu_usage();
 							</div><!-- panel -->
 						</div><!-- col-md-3 -->
 
-						<div class="col-md-3">
+						<div class="col-md-5">
 							<div class="panel panel-primary panel-stat">
 								<div class="panel-heading">
 									<div class="stat" style="max-width:inherit;">
@@ -180,7 +180,7 @@ $currentcpuusage = get_server_cpu_usage();
 					</div><!-- row -->
 
 					<div class="row">
-						<div class="col-md-3">
+						<div class="col-md-5">
 							<div class="panel panel-danger panel-stat">
 								<div class="panel-heading">
 									<div class="stat" style="max-width:inherit;">
@@ -217,7 +217,7 @@ $currentcpuusage = get_server_cpu_usage();
 							</div><!-- panel -->
 						</div><!-- col-sm-6 -->
 
-						<div class="col-md-3">
+						<div class="col-md-5">
 							<div class="panel panel-success panel-stat">
 								<div class="panel-heading">
 									<div class="stat" style="max-width:inherit;">

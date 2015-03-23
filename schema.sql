@@ -23,6 +23,7 @@ CREATE TABLE email (
 	id              INT          NOT NULL AUTO_INCREMENT,
 	timestamp       TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
 	sessionstart    INT(11)      NOT NULL,
+	country         VARCHAR(25)  NOT NULL,
 	ip_src          INT          UNSIGNED NOT NULL,
 	ip_dst          INT          UNSIGNED NOT NULL,
 	tcp_sport       INT          NOT NULL,
@@ -46,6 +47,7 @@ CREATE TABLE email_recipients (
 
 CREATE TABLE attachment (
 	id         INT        NOT NULL AUTO_INCREMENT,
+	date       TIMESTAMP  DEFAULT CURRENT_TIMESTAMP,
 	md5        CHAR(32)   NOT NULL,
 	sha256     CHAR(64)   NOT NULL,
 	count      INT        NOT NULL DEFAULT 1,
@@ -54,7 +56,7 @@ CREATE TABLE attachment (
 	retention  TINYINT(1) NOT NULL DEFAULT 0,
 	analyzed   TINYINT(1) NOT NULL DEFAULT 0,
 	bywho      CHAR(32),
-	payload    LONGBLOB   NOT NULL,
+	payload    LONGBLOB,
 	PRIMARY KEY (id)
 );
 
@@ -74,10 +76,4 @@ CREATE TABLE indicators (
 	type      CHAR(32)     NOT NULL,
 	indicator VARCHAR(255) NOT NULL,
 	PRIMARY KEY (id, type, indicator)
-);
-
-CREATE TABLE campaigns (
-	id       INT          NOT NULL AUTO_INCREMENT,
-	campaign VARCHAR(255) NOT NULL,
-	PRIMARY KEY (id)
 );

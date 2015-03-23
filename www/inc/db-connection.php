@@ -1,10 +1,10 @@
 <?php
 // the database server ip or hostname
-$dbhost = "localhost";
+$dbhost = "funbox.pulsifer.ca";
 // the user that has access to the database
-$dbuser = "root";
+$dbuser = "emailparse";
 // the password of the user
-$dbpass = "";
+$dbpass = "pythonpassword";
 // the database to work with
 $dbname = "email";
 

@@ -1,0 +1,80 @@
+// Process PCAP file containing SMTP traffic on TCP port 25 or 587 (decrypted)
+/email-parser.py -o db -p <pcapfile>/;
+// iterate through email sessions
+if(**Email to process?**){
+  if(**Attachment to process?**){
+    // Every attachment starts with a suspicion of **ZERO**
+    if(**Already have it?**){
+      **Count How Many Times**;
+      if(From 20+ Source IPs?){
+        ||SUSPICION+3||;
+      }
+      else if(10+ IPs){
+        ||SUSPICION+2||;
+      }
+      else if(5+ IPs){
+        ||SUSPICION+1||;
+      }
+      if(20+ name changes?){
+        ||SUSPICION+3||;
+        **GENERATE SYSLOG**;
+        **UPDATE DATABASE**;
+        **PROGRAM ENDS**;
+      }
+      else if(10+ changes?){
+        ||SUSPICION+2||;
+        **GENERATE SYSLOG**;
+        **UPDATE DATABASE**;
+        **PROGRAM ENDS**;
+      }
+      elseif(5+ changes?){
+        ||SUSPICION+1||;
+        **GENERATE SYSLOG**;
+        **UPDATE DATABASE**;
+        **PROGRAM ENDS**;
+      }
+    }
+    else {
+      **Upload it**;
+      if(Malicious Extension?){
+        ||SUSPICION + 3||;
+        **GENERATE SYSLOG**;
+        **UPDATE DATABASE**;
+        **PROGRAM ENDS**;
+      } else {
+        // If we can't check a zip, automatic **SUSPICION+30**, it could be encrypted
+        if(Is it a zip?){
+          Check inside!;
+          if(Is it a zipzip?){
+            Check inside!;
+            if(Is it a zipzipzip?){
+              ||SUSPICION+50||;
+              **GENERATE SYSLOG**;
+              **UPDATE DATABASE**;
+              **PROGRAM ENDS**;
+            } else {
+              ||SUSPICION=0||;
+              **GENERATE SYSLOG**;
+              **UPDATE DATABASE**;
+              **PROGRAM ENDS**;
+            }
+          } else {
+            ||SUSPICION=0||;
+            **GENERATE SYSLOG**;
+            **UPDATE DATABASE**;
+            **PROGRAM ENDS**;
+          }
+        } else {
+          ||SUSPICION=0||;
+          **GENERATE SYSLOG**;
+          **UPDATE DATABASE**;
+          **PROGRAM ENDS**;
+        }
+      }
+    }
+  } else {
+    |**NEXT EMAIL**|;
+  }
+}
+else
+  **PROGRAM ENDS**;

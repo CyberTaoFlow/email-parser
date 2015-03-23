@@ -54,7 +54,7 @@
 			</div><!-- headerbar -->
 
 			<div class="pageheader">
-				<h2><i class="fa fa-database"></i> Database Query <span>Query the database, raw!</span></h2>
+				<h2><i class="fa fa-database"></i> Database <span>A quick look at the emails in your database</span></h2>
 				<div class="breadcrumb-wrapper">
 					<span class="label">You are here:</span>
 					<ol class="breadcrumb">
@@ -65,38 +65,28 @@
 			</div>
 
 			<div class="contentpanel">
-				<!-- <div class="clearfix mb30"></div>-->
+				<!-- <div class="clearfix mb30"></div>
 				<div class="input-group col-sm-3">
 					<input type="text" placeholder="SELECT * FROM email WHERE attachment_ref.name LIKE '%bad%'" id="sqlquery" class="form-control" disabled=""/>
 					<span class="input-group-btn"><button type="button" class="btn btn-default">Go!</button></span>
 				</div>
-				<div class="clearfix mb30"></div>
+				<div class="clearfix mb30"></div>-->
 				<div class="table-responsive">
-					<table class="table table-striped" id="table2">
+					<table id="the_table" class="table table-striped">
 						<thead>
 							<tr>
-								<th>flag</th>
-								<?php foreach($headers as $h){
-									echo '<th>' . $h . '</th>', PHP_EOL;
-								} ?>
+								<th width="10%">Timestamp</th>
+								<th></th>
+								<th>Source IP</th>
+								<th>Sender</th>
+								<th>Subject</th>
+								<th>Attachment</th>
+								<th>Suspicion</th>
+								<th>Checksum</th>
+								<th>#</th>
 							</tr>
 						</thead>
-						<tbody>
-							<?php
-							foreach($tabled as $result){
-								echo "<tr>", PHP_EOL;
-								echo '<td><img style="margin-left:5px;" src="flags/', trim(get_country_by_ip($result['srcip'])), '.png" /></td>', PHP_EOL;
-								echo "<td>", $result['timestamp'], "</td>", PHP_EOL;
-								echo "<td>", $result['srcip'], "</td>", PHP_EOL;
-								echo "<td>", $result['sender'], "</td>", PHP_EOL;
-								echo "<td>", $result['subject'], "</td>", PHP_EOL;
-								echo '<td><span title="Download Attachment" style="margin-left:10px;" data-placement="top" data-toggle="tooltip" class="tooltips"><a href="inc/getfile.php?md5=', $result['md5'], '">', $result['attachment'], '</a></span></td>', PHP_EOL;
-								echo "<td>", $result['suspicion'], "</td>", PHP_EOL;
-								echo '<td><span title="Submit to Cuckoo" style="margin-left:10px;" data-placement="top" data-toggle="tooltip" class="tooltips"><a href="inc/submit-cuckoo.php?md5=', $result['md5'], '">', $result['md5'], '</a></span></td>', PHP_EOL;
-								echo "</tr>", PHP_EOL;
-							}
-							?>
-						</tbody>
+						<tbody></tbody>
 					</table>
 				</div><!-- table-responsive -->
 			</div>
@@ -150,9 +140,17 @@
 			$(this).data('bs.modal', null);
 		});
 
-		$('#table2').dataTable({
-			"sPaginationType": "full_numbers",
+		$('#the_table').dataTable( {
 			dom: 'Tlf<"clear">rtip',
+			"serverSide": true,
+			"processing": true,
+			"ajax": "inc/tables-ajax.php",
+			"fnRowCallback": function( nRow, aData, iDisplayIndex ) {
+				$('td:eq(1)', nRow).html('<img style="margin-left:5px;" src="flags/' + aData[1] + '.png" />');
+				$('td:eq(5)', nRow).html('<span title="Download Attachment" style="margin-left:10px;" data-placement="top" data-toggle="tooltip" class="tooltips"><a href="inc/getfile.php?md5=' + aData[7] + '">' + aData[5] + '</a></span>');
+				$('td:eq(7)', nRow).html('<span title="Send to Sandbox" style="margin-left:10px;" data-placement="top" data-toggle="tooltip" class="tooltips"><a data-toggle="modal" data-target=".external-modal" href="inc/submit-cuckoo.php?md5=' + aData[7] + '">' + aData[7] + '</a></span>');
+				return nRow;
+			},
 			tableTools: {
 				"sSwfPath": "swf/copy_csv_xls_pdf.swf"
 			}

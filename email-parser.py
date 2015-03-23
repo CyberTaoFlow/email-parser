@@ -32,15 +32,17 @@ import zipfile
 import zlib
 # Functions to help with parsing command line arguments
 from optparse import OptionParser, OptionGroup
-
 # Enables us to interact with databases (MySQL (EL6) and Maria (EL7))
 import MySQLdb
 # Enables us to return results in dictionary form (instead of tuples)
 import MySQLdb.cursors
+# Enables us to push results to syslog with CEF for HP Arcsight
+import logging
+from logging.handlers import SysLogHandler
+# Enables us to map IP addresses to countries
+# Keep the GeoIP data files as updated as possible
+import GeoIP
 
-# Sourcing other scripts
-# Lets us parse packets into sessions by protocol(s)
-# import parse_sessions
 # SMTP heavy lifting
 import parse_smtp
 
@@ -68,15 +70,6 @@ file_shortcuts = [ ".inf", ".lnk", ".reg",".scf"]
 
 # A list of lists!
 file_extensions = [file_exe, file_google, file_macros, file_script, file_shortcuts]
-
-def CheckExtension(self, filename):
-    # Function to check the file extension of an attachment
-    for ext_category in file_extensions:
-        for ext in ext_category:
-            # If we've found the droids we're looking for
-            if filename.lower().endswith(ext):
-                return SUSPICION_BAD_EXTENSION
-    return 0
 
 class db(object):
 	# This is the main database class; all interactions with
@@ -135,8 +128,9 @@ class db(object):
 
     def CleanUp(self):
         # Function will remove items from the db based on params below
-        # Number of days to keep emails
+        # Number of days to keep attachment payloads
         days = 30
+
         query = "SELECT COUNT(*) AS count FROM email WHERE timestamp > DATE_SUB(now(), INTERVAL %d DAY)" % (days)
 
         # self.Action(query)
@@ -167,7 +161,7 @@ class db(object):
             # Just making sure the email has attachments
             if email_session.attachments:
                 # Insert metadata meow
-                statement = "INSERT INTO email (sessionstart, ip_src, ip_dst, tcp_sport, tcp_dport, sender, recipients, subject, message_body) VALUES (%d, %d, %d, %d, %d, '%s', %d, '%s', '%s')" % (int(email_session.timestamp), ip_to_uint32(email_session.ip_source), ip_to_uint32(email_session.ip_dest), email_session.sport, email_session.dport, MySQLdb.escape_string(email_session.sender.address), email_session.recipient_count, MySQLdb.escape_string(email_session.subject), MySQLdb.escape_string(email_session.plaintext))
+                statement = "INSERT INTO email (sessionstart, country, ip_src, ip_dst, tcp_sport, tcp_dport, sender, recipients, subject, message_body) VALUES (%d, '%s', %d, %d, %d, %d, '%s', %d, '%s', '%s')" % (int(email_session.timestamp), GetCountry(IPint_to_string(ip_to_uint32(email_session.ip_source))), ip_to_uint32(email_session.ip_source), ip_to_uint32(email_session.ip_dest), email_session.sport, email_session.dport, MySQLdb.escape_string(email_session.sender.address), email_session.recipient_count, MySQLdb.escape_string(email_session.subject), MySQLdb.escape_string(email_session.plaintext))
                 self.Action(statement)
 
                 # Get Email ID (to reference individual attachments to this email)
@@ -198,6 +192,13 @@ class db(object):
 
                     # If we do have the attachment
                     if result:
+                        # Get the ID!
+                        attachment_id = result['id']
+
+                        # Update the references table since we have an attachment!
+                        statement = "INSERT INTO attachment_ref (email_id, attachment_id, name) VALUES (%s, %s, '%s')" % (email_id, attachment_id, MySQLdb.escape_string(attachment.filename))
+                        self.Action(statement)
+
                         # Recalculates the count of uniq IP addresses which sent the same file
                         query = "SELECT COUNT(distinct ip_src) AS count FROM email INNER JOIN attachment_ref ON attachment_ref.email_id=email.id INNER JOIN attachment ON attachment_ref.attachment_id=attachment.id WHERE (attachment.md5 = '%s')" % (attachment.md5)
                         uniq_ips = self.Action(query, 1)
@@ -231,12 +232,12 @@ class db(object):
 
                     else:
                         # Check attachment filename and adjust suspicion if necessary
-                        suspicion += self.CheckExtension(attachment.filename)
+                        suspicion += CheckExtension(attachment.filename)
 
                         # If the attachment is a zip, look inside!
                         if attachment.filename.lower().endswith(".zip"):
                             print "Processing:", attachment.filename
-                            zip_result = self.ZippedAttachment(attachment.payload)
+                            zip_result = ZippedAttachment(attachment.payload)
                             if not zip_result == False and zip_result > 0:
                                 suspicion += zip_result
 
@@ -265,41 +266,6 @@ class db(object):
         statement = "UPDATE attachment SET suspicion = '%d' WHERE md5 = '%s'" % (new_suspicion, md5)
         self.Action(statement)
 
-    def ZippedAttachment(self, data):
-        # Function to determine if a zipfile contains bad
-
-        # ZA also adds to suspicion
-        suspicion = 0
-
-        # Convert attachment.payload (string) to a file object
-        file_data = StringIO(data)
-        memory_zip = StringIO()
-
-        # If the payload is ACTUALLY a zip file, get the names of the files inside
-        if zipfile.is_zipfile(file_data):
-            parent_zipfile = zipfile.ZipFile(file_data)
-            for file in parent_zipfile.namelist():
-                suspicion += self.CheckExtension(file)
-                # if a file inside is a zip (nested zips)
-                if file.lower().endswith(".zip"):
-                    # Try to open the new zip
-                    try:
-                        memory_zip.write(parent_zipfile.open(file).read())
-                    except RuntimeError:
-                        print f, ": Zip is probably encrypted"
-                        return 30
-                    if zipfile.is_zipfile(memory_zip):
-                        for file in zipfile.ZipFile(memory_zip).namelist():
-                            # if the darn thing is triple zipped, raise_tha_roof
-                            if file.lower().endswith(".zip"):
-                                return 50
-                            # double the suspicion for a zipzip
-                            suspicion += self.CheckExtension(file) * 2
-            # Zipped bad files are doubled anyways
-            return suspicion * 2
-        else:
-            return False
-
 class meta(object):
     def __init__(self):
         # this function runs when the program is called
@@ -314,7 +280,7 @@ class meta(object):
             if email_session.attachments:
                 # Insert metadata meow
                 statement = MySQLdb.escape_string(email_session.subject), MySQLdb.escape_string(email_session.plaintext)
-                print ip_to_uint32(email_session.ip_source), email_session.sport, ip_to_uint32(email_session.ip_dest), email_session.dport, email_session.sender.address, email_session.recipient_count, MySQLdb.escape_string(email_session.subject)
+                # print ip_to_uint32(email_session.ip_source), email_session.sport, ip_to_uint32(email_session.ip_dest), email_session.dport, email_session.sender.address, email_session.recipient_count, MySQLdb.escape_string(email_session.subject)
 
                 # Iterate through all the recipients of the email
                 recipient_list = []
@@ -325,18 +291,147 @@ class meta(object):
 
                 # prepare the statement
                 for address in recipient_list:
-                    statement = MySQLdb.escape_string(address)
-                    print statement
+                    recipient = MySQLdb.escape_string(address)
+                    # Iterate through the attachments in the email
+                    for attachment in email_session.attachments:
+                        # Each attachment gets a new suspicion
+                        suspicion = 0
+                        # Check attachment filename and adjust suspicion if necessary
+                        suspicion += CheckExtension(attachment.filename)
 
-                # Iterate through the attachments in the email
-                for attachment in email_session.attachments:
-                    # Each attachment gets a new suspicion
-                    suspicion = 0
-                    print attachment.filename
+                        # If the attachment is a zip, look inside!
+                        if attachment.filename.lower().endswith(".zip"):
+                            print "Processing:", attachment.filename
+                            if "zip" not in attachment.header_type and "zip" not in attachment.extension_type:
+                                suspicion += 2
+                            else:
+                                zip_result = ZippedAttachment(attachment.payload)
+                                if not zip_result == False and zip_result > 0:
+                                    suspicion += zip_result
+                        # MAKE A CEF
+                        # CEF:Version|Device Vendor|Device Product|Device Version|Signature ID|Name|Severity|[Extension]
+                        # cef_string = "CEF:0|Custom|email-parser|1.0|0|Suspicious Email|%d|app=SMTP duser=%s fileHash=%s fname=%s src=%s suser=%s" % (suspicion, recipient, ip_to_uint32(email_session.ip_source))
+                        cef_string = "CEF:0|Custom|email-parser|1.0|0|Suspicious Email|%d|app=SMTP cs1Label=Attachment cs1=%s duser=%s fileHash=%s fname=%s src=%s suser=%s" % (suspicion, attachment.filename, recipient, attachment.md5, os.path.basename(pcap), IPint_to_string(ip_to_uint32(email_session.ip_source)), email_session.sender.address)
+                        print cef_string
+                        #push_syslog(cef_string)
+
+def CheckExtension(filename):
+    # Function to check the file extension of an attachment
+    for ext_category in file_extensions:
+        for ext in ext_category:
+            # If we've found the droids we're looking for
+            if filename.lower().endswith(ext):
+                # Return the bad suspicion
+                return SUSPICION_BAD_EXTENSION
+    return 0
+
+def GetCountry(ipaddr):
+    # Function to check the country of an IP address
+
+    # Alternate caching methods from GeoIP github
+    # GEOIP_STANDARD - Read database from file system. This uses the least memory.
+    # GEOIP_MEMORY_CACHE - Load database into memory. Provides faster performance but uses more memory.
+
+    # If you use a custom directory for geoip
+    # gi = GeoIP.open("/usr/local/share/GeoIP.dat", GeoIP.GEOIP_STANDARD)
+
+    # Initialize the GeoIP class
+    gi = GeoIP.new(GeoIP.GEOIP_STANDARD)
+
+    # Try to get the country
+    try:
+        country = gi.country_code_by_addr(ipaddr).lower()
+    except:
+        # exceptions usually occur when the IP address is private
+        return "ip"
+
+    return country
 
 def ip_to_uint32(ipaddr):
-    # This function takes a bytestring and returns an INT
+    # Function to convert a bytestring to an INT
     return struct.unpack("!I", ipaddr)[0]
+
+def IPint_to_string(IPint):
+    # Function to convert 32-bit integer to dotted IPv4 address
+    return ".".join(map(lambda n: str(IPint>>n & 0xFF), [24,16,8,0]))
+
+def push_syslog(message, local=False):
+    # Function to send syslog messages
+
+    # set the syslog server variables
+    sl_hostname = 'localhost'
+    sl_port = 514
+    sl_facility = 'daemon'
+
+    # Create logger instance
+    logger = logging.getLogger()
+    # set the logging level
+    logger.setLevel(logging.INFO)
+    # set up the syslog handler
+    if local:
+        syslog = SysLogHandler(address=('/dev/log'), facility=sl_facility)
+    else:
+        syslog = SysLogHandler(address=(sl_hostname, sl_port), facility=sl_facility)
+
+    # how to format your syslog message
+    # email-parser.py[12345]: INFO $message
+    # formatter = logging.Formatter('%(module)s[%(process)d]: %(levelname)s %(message)s')
+
+    # CEF standard
+    # email-parser[12345]: CEF0:this|that|other
+    formatter = logging.Formatter('%(module)s[%(process)d]: %(message)s')
+    syslog.setFormatter(formatter)
+    # add the handler to the instance
+    logger.addHandler(syslog)
+
+    # logging options are info, warning, error, critical, exception or log
+    # logger.log(19, message)
+
+    # send the message as INFO
+    logger.info(message)
+
+    # closes (removes the syslog handler)
+    logger.removeHandler(sys)
+
+def ZippedAttachment(data):
+    # Function to determine if a zipfile contains bad
+
+    # ZA also adds to suspicion
+    suspicion = 0
+
+    # Convert attachment.payload (string) to a file object
+    file_data = StringIO(data)
+    memory_zip = StringIO()
+
+    # Initialize the zipfile
+    parent_zipfile = zipfile.ZipFile(file_data)
+
+    # Iterate through the files in the zip
+    for file in parent_zipfile.namelist():
+        # Try to check the extensions of each file inside
+        try:
+            suspicion += CheckExtension(file)
+        except RuntimeError:
+            # Errored out, probably encrypted or not a zip
+            return 15
+        # if a file inside is a zip (nested zips)
+        if file.lower().endswith(".zip"):
+            # Try to open the new zip
+            try:
+                memory_zip.write(parent_zipfile.open(file).read())
+            except RuntimeError:
+                # Errored out, probably encrypted or not a zip
+                return 30
+
+                for file in zipfile.ZipFile(memory_zip).namelist():
+                    # if the darn thing is triple zipped, raise_tha_roof
+                    if file.lower().endswith(".zip"):
+                        return 50
+                    # double the suspicion for a zipzip
+                    suspicion += CheckExtension(file) * 2
+    # Zipped bad files are doubled anyways
+    return suspicion * 2
+
 
 # the if __name__ == '__main__' string allows other python programs to
 # reference this script and call on its functions and classes without actually

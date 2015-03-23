@@ -1,11 +1,13 @@
 .DS_Store
+._.DS_Store
 Thumbs.db
 pcaps
 *.pcap
 *.pyc
 *.docx
-*.txt
 *.zip
 *.patch
 *.log
 phpinfo.php
+
+*.less

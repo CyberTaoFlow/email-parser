@@ -27,14 +27,14 @@ if ($rs === false){
 	// Create a File Info object
 	$finfo = new finfo(FILEINFO_MIME);
 	// Enumerate MIME type from buffer
-	$filetype = $finfo->buffer(zlib_decode($file['data']));
+	$filetype = $finfo->buffer(gzuncompress($file['data']));
 	// Enumerate file size
-	$filesize = strlen(zlib_decode($file['data']));
+	$filesize = strlen(gzuncompress($file['data']));
 	// Return values to the browser
 	header("Content-Type: {$filetype}");
 	header("Content-Disposition: attachment; filename=\"{$file['name']}\"");
 	header("Content-Length:{$filesize}");
-	echo zlib_decode($file['data']);
+	echo gzuncompress($file['data']);
 	$rs->free();
 }
 ?>
