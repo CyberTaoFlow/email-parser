@@ -46,7 +46,7 @@ $limit = "GROUP BY md5";
 $sql_details = array(
     'user' => 'root',
     'pass' => '',
-    'db'   => 'email',
+    'db'   => 'mail',
     'host' => 'localhost'
 );
 
