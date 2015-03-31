@@ -29,8 +29,8 @@ $currentcpuusage = get_server_cpu_usage();
 
 	<title>[email-parser.py]</title>
 	<link href="css/style.default.css" rel="stylesheet">
+	<link href="css/style.inverse.css" rel="stylesheet">
 	<link href="css/morris.css" rel="stylesheet">
-	<link href="css/style.darkknight.css" rel="stylesheet">
 	<link href="css/dropzone.css" rel="stylesheet">
 	<link href="css/jquery.gritter.css" rel="stylesheet">
 
