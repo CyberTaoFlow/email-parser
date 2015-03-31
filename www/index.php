@@ -30,7 +30,7 @@ $currentcpuusage = get_server_cpu_usage();
 	<title>[email-parser.py]</title>
 	<link href="css/style.default.css" rel="stylesheet">
 	<link href="css/morris.css" rel="stylesheet">
-	<link href="css/style.katniss.css" rel="stylesheet">
+	<link href="css/style.darkknight.css" rel="stylesheet">
 	<link href="css/dropzone.css" rel="stylesheet">
 	<link href="css/jquery.gritter.css" rel="stylesheet">
 
@@ -128,7 +128,7 @@ $currentcpuusage = get_server_cpu_usage();
 				<div class="contentpanel">
 					<!-- content goes here... -->
 					<div class="row">
-						<div class="col-md-5">
+						<div class="col-md-3">
 							<div class="panel panel-dark panel-stat">
 								<div class="panel-heading">
 									<div class="stat" style="max-width:inherit;">
@@ -157,7 +157,7 @@ $currentcpuusage = get_server_cpu_usage();
 							</div><!-- panel -->
 						</div><!-- col-md-3 -->
 
-						<div class="col-md-5">
+						<div class="col-md-3">
 							<div class="panel panel-primary panel-stat">
 								<div class="panel-heading">
 									<div class="stat" style="max-width:inherit;">

@@ -233,8 +233,9 @@ class SSP {
 		// Main query to actually get the data
 		$data = self::sql_exec( $db, $bindings,
 			"SELECT SQL_CALC_FOUND_ROWS ".implode(", ", self::pluck($columns, 'db'))."
-			 FROM `$table` RIGHT JOIN attachment_ref ON attachment_ref.email_id=email.id RIGHT JOIN attachment ON attachment_ref.attachment_id=attachment.id GROUP BY md5
+			 FROM `$table` RIGHT JOIN attachment_ref ON attachment_ref.email_id=email.id RIGHT JOIN attachment ON attachment_ref.attachment_id=attachment.id
 			 $where
+			 GROUP BY md5
 			 $order
 			 $limit"
 		);

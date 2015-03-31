@@ -42,16 +42,18 @@ from logging.handlers import SysLogHandler
 # Enables us to map IP addresses to countries
 # Keep the GeoIP data files as updated as possible
 import GeoIP
+# Enables us to perform fuzzy hashing
+import ssdeep
 
 # SMTP heavy lifting
 import parse_smtp
 
 # Define Database Connection Details
-db_host = "funbox.pulsifer.ca"
+db_host = "localhost"
 db_port = 3306
-db_user = "emailparse"
-db_pass = "pythonpassword"
-db_name = "email"
+db_user = "root"
+db_pass = ""
+db_name = "mail"
 
 # EMAIL SUSPICION THRESHOLDS
 # Raise the suspicion if more than this many unique IP addresses or filenames
@@ -216,7 +218,7 @@ class db(object):
                             suspicion += 1
 
                         # Since we have it, has the filename morphed?
-                        query = "SELECT COUNT(*) AS count FROM attachment_ref INNER JOIN attachment ON attachment_ref.attachment_id=attachment.id WHERE attachment.md5 = '%s' AND attachment_ref.name != '%s'" % (attachment.md5, attachment.filename)
+                        query = "SELECT COUNT(*) AS count FROM attachment_ref INNER JOIN attachment ON attachment_ref.attachment_id=attachment.id WHERE attachment.md5 = '%s' AND attachment_ref.name != '%s'" % (attachment.md5, MySQLdb.escape_string(attachment.filename))
                         result = self.Action(query, 1)
 
                         # Based on the count, adjust suspicion
@@ -241,10 +243,17 @@ class db(object):
                             if not zip_result == False and zip_result > 0:
                                 suspicion += zip_result
 
+			# Get the ssdeep hash
+			ssdeep_hash = ssdeep.hash(attachment.payload)
+
                         # Upload the attachment to the database
-                        statement = "INSERT INTO attachment (md5, sha256, suspicion, payload) VALUES (%s, %s, %s, %s)"
+                        statement = "INSERT INTO attachment (md5, sha256, ssdeep, suspicion, payload) VALUES (%s, %s, %s, %s, %s)"
                         print "UPLOADING", attachment.filename, "WITH SUSPICION", suspicion
-                        self.db.execute(statement, (attachment.md5, attachment.sha256, suspicion, zlib.compress(attachment.payload)))
+                    
+			try:
+			    self.db.execute(statement, (attachment.md5, attachment.sha256, ssdeep_hash, suspicion, zlib.compress(attachment.payload)))
+                        except:
+                            print "Something went awry, probably too big"
 
                         # Get the ID for the attachment we just uploaded
                         statement = "SELECT LAST_INSERT_ID() AS last_id"
@@ -308,12 +317,16 @@ class meta(object):
                                 zip_result = ZippedAttachment(attachment.payload)
                                 if not zip_result == False and zip_result > 0:
                                     suspicion += zip_result
+
+			# FUZZY HASH
+                        ssdeep_hash = ssdeep.hash(attachment.payload)
+
                         # MAKE A CEF
                         # CEF:Version|Device Vendor|Device Product|Device Version|Signature ID|Name|Severity|[Extension]
                         # cef_string = "CEF:0|Custom|email-parser|1.0|0|Suspicious Email|%d|app=SMTP duser=%s fileHash=%s fname=%s src=%s suser=%s" % (suspicion, recipient, ip_to_uint32(email_session.ip_source))
                         cef_string = "CEF:0|Custom|email-parser|1.0|0|Suspicious Email|%d|app=SMTP cs1Label=Attachment cs1=%s duser=%s fileHash=%s fname=%s src=%s suser=%s" % (suspicion, attachment.filename, recipient, attachment.md5, os.path.basename(pcap), IPint_to_string(ip_to_uint32(email_session.ip_source)), email_session.sender.address)
-                        print cef_string
                         #push_syslog(cef_string)
+			print cef_string
 
 def CheckExtension(filename):
     # Function to check the file extension of an attachment

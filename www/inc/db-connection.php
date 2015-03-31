@@ -1,12 +1,12 @@
 <?php
 // the database server ip or hostname
-$dbhost = "funbox.pulsifer.ca";
+$dbhost = "localhost";
 // the user that has access to the database
-$dbuser = "emailparse";
+$dbuser = "root";
 // the password of the user
-$dbpass = "pythonpassword";
+$dbpass = "";
 // the database to work with
-$dbname = "email";
+$dbname = "mail";
 
 $db = new mysqli($dbhost, $dbuser, $dbpass, $dbname);
 

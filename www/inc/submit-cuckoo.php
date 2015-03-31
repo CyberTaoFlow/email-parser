@@ -18,6 +18,27 @@
 	$filetype = $finfo->buffer(gzuncompress($file['data']));
 	$filesize = strlen(gzuncompress($file['data']));
 
+        $url = 'http://cuckoo/tasks/create/file';
+
+	$fdata = gzuncompress($file['data']);
+	
+	$curl_post_data = array(
+		'file' => ';filename="'.$file['name'].'"'.$fdata,
+		'tags' => 'email-parser, suspicious email'
+	);
+	
+	$ch = curl_init();
+	curl_setopt($ch, CURLOPT_FAILONERROR, true);
+	curl_setopt($ch, CURLOPT_URL, $url);
+	curl_setopt($ch, CURLOPT_USERAGENT, "email-parser cURL PHP");
+	curl_setopt($ch, CURLOPT_PORT, 1337);
+	curl_setopt($ch, CURLOPT_POST, true);
+	curl_setopt($ch, CURLOPT_POSTFIELDS, $curl_post_data);
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+	$result = curl_exec($ch);
+	curl_close($ch);
+		
+
 	echo '<div class="modal-header">';
 	echo '<button aria-hidden="true" data-dismiss="modal" class="close" type="button">&times;</button>';
 	echo '<h4 class="modal-title">Submit File to Cuckoo Sandbox</h4>';
@@ -32,7 +53,9 @@
 		echo 'Sample of text:';
 		echo '<pre>', substr(nl2br(gzuncompress($file['data'])), 0, 512), '</pre>';
 	}
-
+	
+	echo '<pre>test: ', $result, '</pre>';
+	
 	// todo:
 	// POST attachment to cuckoo API
 	// visual feedback

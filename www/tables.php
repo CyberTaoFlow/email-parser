@@ -15,7 +15,7 @@
 	<title>[email-parser.py]</title>
 	<link href="css/style.default.css" rel="stylesheet">
 	<link href="css/jquery.datatables.css" rel="stylesheet">
-	<link href="css/style.katniss.css" rel="stylesheet">
+	<link href="css/style.darkknight.css" rel="stylesheet">
 	<link href="css/dataTables.tableTools.css" rel="stylesheet">
 	<link href="css/dropzone.css" rel="stylesheet">
 	<link href="css/jquery.gritter.css" rel="stylesheet">
