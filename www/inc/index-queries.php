@@ -86,7 +86,7 @@ if ($rs === false){
 }
 
 // SQL query to determine the size of the database
-$sql = "SELECT Round(Sum(data_length + index_length) / 1024 / 1024, 1) AS size FROM information_schema.tables WHERE table_schema='email'";
+$sql = "SELECT Round(Sum(data_length + index_length) / 1024 / 1024, 1) AS size FROM information_schema.tables WHERE table_schema='mail'";
 $rs = $db->query($sql);
 if ($rs === false){
   // Trigger an error, show the user what went wrong
@@ -128,7 +128,7 @@ if ($rs === false){
 }
 
 // SQL query for the most targeted email
-$sql = "SELECT recipient FROM email_recipients GROUP BY recipient ORDER BY COUNT(recipient) DESC LIMIT 1";
+$sql = "SELECT recipient FROM email_recipients WHERE recipient <> '' GROUP BY recipient ORDER BY COUNT(recipient) DESC LIMIT 1";
 $rs = $db->query($sql);
 if ($rs === false){
   // Trigger an error, show the user what went wrong

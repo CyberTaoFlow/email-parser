@@ -40,11 +40,13 @@ $columns = array(
     array( 'db' => 'count',             'dt' => 8 )
 );
 
+$limit = "GROUP BY md5";
+
 // SQL server connection information
 $sql_details = array(
     'user' => 'root',
     'pass' => '',
-    'db'   => 'email',
+    'db'   => 'mail',
     'host' => 'localhost'
 );
 

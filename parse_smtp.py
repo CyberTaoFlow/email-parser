@@ -32,7 +32,7 @@ class EmailAddress(object):
 def DecodeHeader(header_text, default="ascii"):
 	"""Decode header_text if needed"""
 	try:
-		headers = email.Header.decode_header(header_text)
+		headers = email.Header.decode_header(header_text.encode('ascii', 'xmlcharrefreplace'))
 	except email.Errors.HeaderParseError:
 		return header_text.encode('ascii', 'replace').decode('ascii')
 	else:
@@ -96,17 +96,24 @@ class FileAttachment(object):
 		self.payload = buf
 		# filename as indicated by the email
 		self.filename = filename
-		self.size = len(buf)
+		
+		if self.payload is not None:
+			self.size = len(buf)
 
-		# get the assumed mime type from the file extention
-		self.extension_type = file_type.check_file_type_from_extension(filename)
+			# get the assumed mime type from the file extention
+			self.extension_type = file_type.check_file_type_from_extension(filename)
 
-		# get the file type from the file header (magic number)
-		self.header_type = file_type.check_file_type_from_buffer(buf)
+			# get the file type from the file header (magic number)
+			self.header_type = file_type.check_file_type_from_buffer(buf)
 
-		# calculate the hashes
-		self.md5 = hashlib.md5(buf).hexdigest()
-		self.sha256 = hashlib.sha256(buf).hexdigest()
+			# calculate the hashes
+			self.md5 = hashlib.md5(buf).hexdigest()
+			self.sha256 = hashlib.sha256(buf).hexdigest()
+
+		else:
+ 			self.filename = "ENVELOPE-BROKEN-FILE:" + self.filename
+ 			self.md5 = "0" * 32
+
 
 
 class EmailSession(object):
@@ -225,7 +232,11 @@ class EmailSession(object):
 			else:
 				plaintext = part.get_payload(decode=True)
 				if isinstance(plaintext, str):
-					self.plaintext += plaintext.decode('ascii', 'ignore') + '\n\n'
+ 					try:
+ 						self.plaintext += plaintext.encode('ascii', 'ignore') + '\n\n'
+ 					except:
+ 						self.plaintext += plaintext.decode('iso-8859-1').encode('ascii', 'xmlcharrefreplace')
+
 
 
 class EmailList(object):
