@@ -80,13 +80,13 @@ file_extensions = [file_exe, file_google, file_macros, file_script, file_shortcu
 
 
 def exitHandler():
-''' This function was made to handle an exception when we're running
-batches of PCAP files on a cron job and the script runs over itself.
+    ''' This function was made to handle an exception when we're running
+        batches of PCAP files on a cron job and the script runs over itself.
 
-In the if __name__ = __main__ function, the script creates a pid file
+        In the if __name__ = __main__ function, the script creates a pid file
 
-This function uses the atexit library to handle all the pidfile junk
-whenever the program quits '''
+        This function uses the atexit library to handle all the pidfile junk
+        whenever the program quits '''
 
     # Open the old pidfile and read into oldpid
     # oldpid = "12345"
@@ -116,9 +116,9 @@ whenever the program quits '''
             print "Something went wrong, take a look in /tmp/"
 
 class db(object):
-'''	This is the main database class. All interactions with
-    the database happen here. Metadata for the database
-    is also generated inside this class '''
+    ''' This is the main database class. All interactions with
+        the database happen here. Metadata for the database
+        is also generated inside this class '''
 
     def __init__(self):
         # This special method runs as soon as the object (db) is initialized
@@ -144,9 +144,9 @@ class db(object):
 
     def Action(self, statement, single_return=0):
         """ This little function just makes sure you aren't
-        passing anything crazy to the database (like an INT).
-        It also lets you specify how many rows you want the database
-        to return (usually one) """
+            passing anything crazy to the database (like an INT).
+            It also lets you specify how many rows you want the database
+            to return (usually one) """
 
         # Checks to see if the statement is a string
         if not isinstance(statement, str):
@@ -204,11 +204,11 @@ class db(object):
         print "Download complete"
 
     def InsertMeta(self, file):
-    ''' This is the most important function in the entire program
-    (if you're working with a database). This function is responsible
-    for generating all the suspicion for a specific email and uploading
-    metadata and attachments into the database. If something has gone wrong
-    with the database uploads, you should probably start here '''
+        ''' This is the most important function in the entire program
+            (if you're working with a database). This function is responsible
+            for generating all the suspicion for a specific email and uploading
+            metadata and attachments into the database. If something has gone wrong
+            with the database uploads, you should probably start here '''
 
         # Grab all the emails from the PCAP file (via parse_smtp)
         email_list = parse_smtp.EmailList(file)
@@ -314,8 +314,8 @@ class db(object):
 
                         # Try to upload the attachment
                         try:
-                        ''' This statement avoids the Action function because it contains funny
-                            binary data and Action was screwing with it '''
+                            ''' This statement avoids the Action function because it contains funny
+                                binary data and Action was screwing with it '''
                             self.db.execute(statement, (len(attachment.payload), attachment.md5, attachment.sha256, ssdeep_hash, suspicion, zlib.compress(attachment.payload)))
                         except:
                             print "Something went awry, probably too big"
@@ -330,8 +330,8 @@ class db(object):
                         self.Action(statement)
 
     def RaiseSuspicion(self, md5, new_suspicion):
-    ''' This function raises the suspicion of a file in the database
-        by pulling the current suspicion and adding to it '''
+        ''' This function raises the suspicion of a file in the database
+            by pulling the current suspicion and adding to it '''
 
         # Prepare statement and action db
         query = "SELECT suspicion FROM attachment WHERE md5='%s'" % (md5)
