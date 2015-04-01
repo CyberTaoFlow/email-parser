@@ -307,7 +307,7 @@ class db(object):
                         ssdeep_hash = ssdeep.hash(attachment.payload)
 
                         # Upload the attachment to the database
-                        statement = "INSERT INTO attachment (size, md5, sha256, ssdeep, suspicion, payload) VALUES (%d, %s, %s, %s, %s, %s)"
+                        statement = "INSERT INTO attachment (size, md5, sha256, ssdeep, suspicion, payload) VALUES (%s, %s, %s, %s, %s, %s)"
                         # Print info (log)
                         # eg. UPLOADING[6]: BADFILENAME.exe
                         print "UPLOADING[" + str(suspicion) + "]:", attachment.filename
