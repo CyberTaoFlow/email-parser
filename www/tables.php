@@ -45,6 +45,7 @@
 						<ul class="nav nav-horizontal">
 							<li><a href="index.php"><i class="fa fa-home"></i><span>Dashboard</span></a></li>
 							<li class="active"><a href="#"><i class="fa fa-database"></i><span>Database</span></a></li>
+							<li><a href="table-target.php"><i class="fa fa-bullseye"></i><span>Target Database</span></a></li>
 							<li><a href="inc/submit-indicator.html" data-toggle="modal" data-target=".external-modal"><i class="fa fa-crosshairs"></i> <span>Submit Indicator</span></a></li>
 							<li><a href="#" data-toggle="modal" data-target=".upload-modal"><i class="fa fa-upload"></i> <span>Upload PCAP</span></a></li>
 							<li><a href="suspicion.html" data-toggle="modal" data-target=".external-modal-lg"><i class="fa fa-question"></i> <span>How Suspicion Works</span></a></li>
