@@ -31,6 +31,7 @@ CREATE TABLE email (
 	sender          VARCHAR(255) NOT NULL,
 	recipients      INT          NOT NULL,
 	subject         VARCHAR(255) NOT NULL,
+	targeted        TINYINT(1)   NOT NULL DEFAULT 0,
 	campaign        INT,
 	message_body    BLOB,
 	PRIMARY KEY (id),
@@ -48,15 +49,15 @@ CREATE TABLE email_recipients (
 CREATE TABLE attachment (
 	id         INT          NOT NULL AUTO_INCREMENT,
 	date       TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
+	size       INT          NOT NULL,
 	md5        CHAR(32)     NOT NULL,
 	sha256     CHAR(64)     NOT NULL,
-        ssdeep     VARCHAR(255) NOT NULL,
+  ssdeep     VARCHAR(255) NOT NULL,
 	count      INT          NOT NULL DEFAULT 1,
 	suspicion  SMALLINT     NOT NULL DEFAULT 0,
 	morphed    SMALLINT     NOT NULL DEFAULT 0,
 	retention  TINYINT(1)   NOT NULL DEFAULT 0,
 	analyzed   TINYINT(1)   NOT NULL DEFAULT 0,
-	bywho      CHAR(32),
 	payload    LONGBLOB,
 	PRIMARY KEY (id)
 );

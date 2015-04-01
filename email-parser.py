@@ -1,27 +1,26 @@
 #!/usr/bin/env python
 
-# BY GALARNEAU, HAYES, PULSIFER
+''' This email parsing script is a product of Jon Galarneau, Andrew Hayes,
+and Jon Pulsifer. The initial focus of this research project was to learn python
+and create a decent end product for use in defensive cyber operations. This script
+should allow users to increase their security posture with respect to email
+phishing campaigns.
 
-# TODO
-# retention
+The program flow is as follows:
 
-# REQUIRED FOR USAGE
-# Watch out for old versions of python-magic in both /lib and /lib64
-# libmagic (yum -y install libmagic)
-# python-magic (pip install python-magic)
-# MySQL python wrapper (yum -y install MySQL-python)
-# Set MySQL variable (in my.cnf) based on max attachment size: max_allowed_packet = 32M
+./email-parser.py -o db -p PCAPFILE
+parse_sessions(PCAPFILE) -> parse_smtp(tcpdata) -> db.InsertMeta(PCAPFILE)
 
+./email-parser.py -o cef -p PCAPFILE
+parse_sessions(PCAPFILE) -> parse_smtp(tcpdata) -> meta.Generate(PCAPFILE) '''
+
+###### THE LIBRARIES WE NEED TO DO OUR JOB
 # Function to implement a file-like string buffer (make strings "files" in memory)
 from cStringIO import StringIO
-# Library to let us get the username of the person who called the program
-import getpass
 # Library to generate MD5 and SHA256 sums
 import hashlib
 # Libraries for finding files in the OS and capturing CLI arguments
-import os
-import os.path
-import sys
+import os, os.path, sys
 # Library that lets us search by Regular Expression (regex)
 import re
 # Library to work with different structures (hex bytestrings .etc)
@@ -32,7 +31,7 @@ import zipfile
 import zlib
 # Functions to help with parsing command line arguments
 from optparse import OptionParser, OptionGroup
-# Enables us to interact with databases (MySQL (EL6) and Maria (EL7))
+# Enables us to interact with a MySQL or Maria database
 import MySQLdb
 # Enables us to return results in dictionary form (instead of tuples)
 import MySQLdb.cursors
@@ -40,32 +39,19 @@ import MySQLdb.cursors
 import logging
 from logging.handlers import SysLogHandler
 # Enables us to map IP addresses to countries
-# Keep the GeoIP data files as updated as possible
+# Remember to update GeoIP db as frequently as possible for accuracy
 import GeoIP
-# Enables us to perform fuzzy hashing
+# Enables us to perform ssdeep fuzzy hashing on files
 import ssdeep
-# Enables us to perform a function when we quit
+# Enables us to execute a function when the program exits
 import atexit
-
-def exitHandler():
-    with open(pidfile, 'r') as f:
-        data = f.read()
-        if str(os.getpid()) is not data:
-            pass
-        else:
-            print "Deleting pid file"
-            try:
-                os.unlink(pidfile)
-            except:
-                print "Could not delete pidfile"
-
-atexit.register(exitHandler)
-
-# Program PID file
-pidfile = "/tmp/email-parser.pid"
-
-# SMTP heavy lifting
+# SMTP parsing script we made
 import parse_smtp
+###### END LIBRARIES
+
+###### GLOBAL VARIABLES
+# The name of the PID file for the program
+pidfile = "/tmp/email-parser.pid"
 
 # Define Database Connection Details
 db_host = "localhost"
@@ -76,9 +62,9 @@ db_name = "mail"
 
 # EMAIL SUSPICION THRESHOLDS
 # Raise the suspicion if more than this many unique IP addresses or filenames
-SUSPICION_IP_THRESHOLD_LOW = 5   # suspicion + 1
-SUSPICION_IP_THRESHOLD_MED = 10  # suspicion + 2
-SUSPICION_IP_THRESHOLD_HIGH = 20 # suspicion + 3
+SUSPICION_THRESHOLD_LOW = 5   # suspicion + 1
+SUSPICION_THRESHOLD_MED = 10  # suspicion + 2
+SUSPICION_THRESHOLD_HIGH = 20 # suspicion + 3
 SUSPICION_BAD_EXTENSION = 3      # suspicion + 3
 
 # The attachment types we care about (by extension)
@@ -87,25 +73,66 @@ file_google = [".ade", ".adp", ".chm", ".hta", ".ins", ".isp", ".lib", ".mde", "
 file_macros = [".docm",".dotm", ".potm", ".ppam", ".ppsm", ".pptm", ".sldm", ".xlam", ".xlsm", ".xltm"]
 file_script = [".bat", ".cmd", ".js", ".jse", ".msh", ".msh1", ".msh1xml", ".msh2", ".msh2xm", ".mshxml", ".ps1",
                ".ps1xml", ".ps2", ".ps2xml", ".psc1", ".psc2", ".vb", ".vbe", ".vbs", ".ws", ".wsc", ".wsf", ".wsh"]
-file_shortcuts = [ ".inf", ".lnk", ".reg",".scf"]
+file_shortcuts = [".inf", ".lnk", ".reg", ".scf"]
 
-# A list of lists!
+# Make a list of the lists above. List-ception!
 file_extensions = [file_exe, file_google, file_macros, file_script, file_shortcuts]
 
 
+def exitHandler():
+''' This function was made to handle an exception when we're running
+batches of PCAP files on a cron job and the script runs over itself.
+
+In the if __name__ = __main__ function, the script creates a pid file
+
+This function uses the atexit library to handle all the pidfile junk
+whenever the program quits '''
+
+    # Open the old pidfile and read into oldpid
+    # oldpid = "12345"
+    with open(pidfile, 'r') as f:
+        oldpid = f.read()
+
+    # Compare the current pid to the one we saved earlier
+    # if 12345 = 12345
+    if pid = oldpid:
+        # try to delete the old pidfile
+        try:
+            os.unlink(pidfile)
+        except:
+            # if it doesnt't work, direct the user to /tmp/
+            print "Something went wrong, take a look in /tmp/"
+    # if 12345 != 12345
+    else:
+        # Try to see if the program is running
+        try:
+            procstring = "/proc/" + data
+            # If the program is not running and we have a pidfile, delete it
+            if not os.path.exists(procstring):
+                print "PID file exists but program not found. Dead? Removing PIDFILE"
+                os.unlink(pidfile)
+        except:
+            # If that didn't work, direct the user to /tmp/
+            print "Something went wrong, take a look in /tmp/"
+
 class db(object):
-	# This is the main database class; all interactions with
-    # the database happen through this class
+'''	This is the main database class. All interactions with
+    the database happen here. Metadata for the database
+    is also generated inside this class '''
 
     def __init__(self):
         # This special method runs as soon as the object (db) is initialized
-        # Database connection handling here
+
+        # Try to connect to the database
         try:
             connection = MySQLdb.connect(host=db_host, user=db_user, passwd=db_pass, db=db_name, port=db_port)
-            # Sets database cursor to dictionary
+            # Sets database cursor to a dictionary so we can reference returns by name
+            # eg. row['sender_name'] = Bob
             self.db = connection.cursor(MySQLdb.cursors.DictCursor)
             # Sets database cursor to tuple [default]
+            # eg. row[0] = ('sender_name', 'Bob')
             # self.db = connection.cursor()
+        # The database didn't connect. Error out and say why
         except:
             print "Sorry, can't connect to database:", sys.exc_info()[0], "\n"
             raise
@@ -116,37 +143,32 @@ class db(object):
         self.db.close()
 
     def Action(self, statement, single_return=0):
-        # This function interacts with the database
+        """ This little function just makes sure you aren't
+        passing anything crazy to the database (like an INT).
+        It also lets you specify how many rows you want the database
+        to return (usually one) """
 
         # Checks to see if the statement is a string
         if not isinstance(statement, str):
+            # Return a bool, just because
             return False
 
         # Attempts the query
         # eg: "SELECT id, sender FROM email LIMIT 10"
         try:
             self.db.execute(statement)
+        # Error out if something went wrong
         except:
             print "You had an error in your SQL statement.", sys.exc_info()[0]
             raise
 
-        # If the second argument is 1, return only one row
+        # If the second argument to Action is 1, return only one row
         if single_return == 1:
+            # Return a single row
             return self.db.fetchone()
         else:
+            # Return all the rows
             return self.db.fetchall()
-
-    def AnalyzeFile(self, md5):
-        """ This function will adjust the database to filter files
-        already analyzed from the top10 results """
-        # Get the current user
-        username = getpass.getuser()
-
-        # Prepare the statement
-        statement = "UPDATE attachment SET analyzed='1',bywho='%s' WHERE md5='%s'" % (username, md5)
-
-        # Do the dirty
-        self.Action(statement)
 
     def CleanUp(self):
         # Function will remove items from the db based on params below
@@ -165,28 +187,44 @@ class db(object):
     def GetFile(self, hash):
         # This function fetches a file from the database
         # the file is saved as its first seen filename
+
+        # Construct and action the query
         query = "SELECT attachment_ref.name AS name, attachment.payload AS payload FROM attachment INNER JOIN attachment_ref ON attachment_ref.attachment_id=attachment.id WHERE md5='%s'" % hash
         result = self.Action(query, 1)
+
+        # Print info to the user
         print "Downloading:", result['name']
         print "Filesize:", len(result['payload']), "bytes"
+
+        # Write the file to the current dir
         with open(result['name'], 'wb') as f:
             f.write(zlib.decompress(result['payload']))
+
+        # Print info to the user
         print "Download complete"
 
     def InsertMeta(self, file):
+    ''' This is the most important function in the entire program
+    (if you're working with a database). This function is responsible
+    for generating all the suspicion for a specific email and uploading
+    metadata and attachments into the database. If something has gone wrong
+    with the database uploads, you should probably start here '''
+
         # Grab all the emails from the PCAP file (via parse_smtp)
         email_list = parse_smtp.EmailList(file)
 
-        # Iterate through the emails
+        # Iterate through the email list
         for email_session in email_list.emails:
 
             # Just making sure the email has attachments
             if email_session.attachments:
-                # Insert metadata meow
+                # Build the metadata query and action it
+                # eg. INSERT INTO EMAIL (fields) VALUES (143151445, 'ca', '10.13.37.0')
                 statement = "INSERT INTO email (sessionstart, country, ip_src, ip_dst, tcp_sport, tcp_dport, sender, recipients, subject, message_body) VALUES (%d, '%s', %d, %d, %d, %d, '%s', %d, '%s', '%s')" % (int(email_session.timestamp), GetCountry(IPint_to_string(ip_to_uint32(email_session.ip_source))), ip_to_uint32(email_session.ip_source), ip_to_uint32(email_session.ip_dest), email_session.sport, email_session.dport, MySQLdb.escape_string(email_session.sender.address), email_session.recipient_count, MySQLdb.escape_string(email_session.subject), MySQLdb.escape_string(email_session.plaintext))
                 self.Action(statement)
 
                 # Get Email ID (to reference individual attachments to this email)
+                # eg. email_id = 5024
                 statement = "SELECT LAST_INSERT_ID() AS last_id"
                 result = self.Action(statement, 1)
                 email_id = result['last_id']
@@ -198,7 +236,8 @@ class db(object):
                 for recipient in email_session.cc:
                     recipient_list.append(recipient.address)
 
-                # prepare the statement
+                # Prepare and action the recipient list statement
+                # eg. INSERT INTO email_recipients (fields) VALUES (5024, 'root@localhost.lan')
                 for address in recipient_list:
                     statement = "INSERT INTO email_recipients (email_id, recipient) VALUES (%s, '%s')" % (email_id, MySQLdb.escape_string(address))
                     self.Action(statement, 1)
@@ -229,30 +268,27 @@ class db(object):
                         statement = "UPDATE attachment SET count='%d' WHERE md5='%s'" % (uniq_ips['count'], attachment.md5)
                         self.Action(statement)
 
-                        # If we have it at least SUSPICION_IP_THRESHOLD times, raise suspicion
-                        if uniq_ips['count'] > SUSPICION_IP_THRESHOLD_HIGH:
+                        # If we have it at least SUSPICION_THRESHOLD times, raise suspicion
+                        # Reminder: see global variables for SUSPICION_THRESHOLD vars
+                        if uniq_ips['count'] > SUSPICION_THRESHOLD_HIGH:
                             suspicion += 3
-                        elif uniq_ips['count'] > SUSPICION_IP_THRESHOLD_MED:
+                        elif uniq_ips['count'] > SUSPICION_THRESHOLD_MED:
                             suspicion += 2
-                        elif uniq_ips['count'] > SUSPICION_IP_THRESHOLD_LOW:
+                        elif uniq_ips['count'] > SUSPICION_THRESHOLD_LOW:
                             suspicion += 1
 
                         # Since we have it, has the filename morphed?
                         query = "SELECT COUNT(*) AS count FROM attachment_ref INNER JOIN attachment ON attachment_ref.attachment_id=attachment.id WHERE attachment.md5 = '%s' AND attachment_ref.name != '%s'" % (attachment.md5, MySQLdb.escape_string(attachment.filename))
                         result = self.Action(query, 1)
-			print query
-			print result
-			print
 
                         # Based on the count, adjust suspicion
-                        if result['count'] > SUSPICION_IP_THRESHOLD_HIGH:
+                        if result['count'] > SUSPICION_THRESHOLD_HIGH:
                             suspicion += 3
-                        elif result['count'] > SUSPICION_IP_THRESHOLD_MED:
+                        elif result['count'] > SUSPICION_THRESHOLD_MED:
                             suspicion += 2
-                        elif result['count'] > SUSPICION_IP_THRESHOLD_LOW:
-                            suspicion += 1 
+                        elif result['count'] > SUSPICION_THRESHOLD_LOW:
+                            suspicion += 1
 
-			print "WINNING!"
                         # Raise the suspicion in the db
                         self.RaiseSuspicion(attachment.md5, suspicion)
 
@@ -267,15 +303,20 @@ class db(object):
                             if not zip_result == False and zip_result > 0:
                                 suspicion += zip_result
 
-			# Get the ssdeep hash
-			ssdeep_hash = ssdeep.hash(attachment.payload)
+                        # Get the ssdeep hash
+                        ssdeep_hash = ssdeep.hash(attachment.payload)
 
                         # Upload the attachment to the database
-                        statement = "INSERT INTO attachment (md5, sha256, ssdeep, suspicion, payload) VALUES (%s, %s, %s, %s, %s)"
-                        print "UPLOADING", attachment.filename, "WITH SUSPICION", suspicion
-                    
-			try:
-			    self.db.execute(statement, (attachment.md5, attachment.sha256, ssdeep_hash, suspicion, zlib.compress(attachment.payload)))
+                        statement = "INSERT INTO attachment (size, md5, sha256, ssdeep, suspicion, payload) VALUES (%d, %s, %s, %s, %s, %s)"
+                        # Print info (log)
+                        # eg. UPLOADING[6]: BADFILENAME.exe
+                        print "UPLOADING[" + str(suspicion) + "]:", attachment.filename
+
+                        # Try to upload the attachment
+                        try:
+                        ''' This statement avoids the Action function because it contains funny
+                            binary data and Action was screwing with it '''
+                            self.db.execute(statement, (len(attachment.payload), attachment.md5, attachment.sha256, ssdeep_hash, suspicion, zlib.compress(attachment.payload)))
                         except:
                             print "Something went awry, probably too big"
 
@@ -289,13 +330,19 @@ class db(object):
                         self.Action(statement)
 
     def RaiseSuspicion(self, md5, new_suspicion):
-        # This function raises the suspicion of a file in the database
-        # by pulling the current suspicion and adding to it
+    ''' This function raises the suspicion of a file in the database
+        by pulling the current suspicion and adding to it '''
+
+        # Prepare statement and action db
         query = "SELECT suspicion FROM attachment WHERE md5='%s'" % (md5)
         result = self.Action(query, 1)
         current_suspicion = result['suspicion']
+
+        # Add new to old suspicion
+        # eg. new_suspicion = 4 + 5
         new_suspicion += current_suspicion
 
+        # Prepare statement and action db
         statement = "UPDATE attachment SET suspicion = '%d' WHERE md5 = '%s'" % (new_suspicion, md5)
         self.Action(statement)
 
@@ -342,7 +389,7 @@ class meta(object):
                                 if not zip_result == False and zip_result > 0:
                                     suspicion += zip_result
 
-			# FUZZY HASH
+                        # FUZZY HASH
                         ssdeep_hash = ssdeep.hash(attachment.payload)
 
                         # MAKE A CEF
@@ -350,7 +397,7 @@ class meta(object):
                         # cef_string = "CEF:0|Custom|email-parser|1.0|0|Suspicious Email|%d|app=SMTP duser=%s fileHash=%s fname=%s src=%s suser=%s" % (suspicion, recipient, ip_to_uint32(email_session.ip_source))
                         cef_string = "CEF:0|Custom|email-parser|1.0|0|Suspicious Email|%d|app=SMTP cs1Label=Attachment cs1=%s duser=%s fileHash=%s fname=%s src=%s suser=%s" % (suspicion, attachment.filename, recipient, attachment.md5, os.path.basename(pcap), IPint_to_string(ip_to_uint32(email_session.ip_source)), email_session.sender.address)
                         #push_syslog(cef_string)
-			print cef_string
+                        print cef_string
 
 def CheckExtension(filename):
     # Function to check the file extension of an attachment
@@ -486,13 +533,19 @@ def ZippedAttachment(data):
 # reference this script and call on its functions and classes without actually
 # executing the program from scratch
 if __name__ == '__main__':
-    # let's do some pid handling
+    # Register the exitHandler function to the atexit library
+    atexit.register(exitHandler)
+
+    # Grab the current PID for the script
     pid = str(os.getpid())
-    
+
+    # Check if pidfile (in global variables) exists
     if os.path.isfile(pidfile):
+        # Exit if it does (see exitHandler)
         print "%s already exists" % pidfile
-	sys.exit(1)
+        sys.exit(1)
     else:
+        # If it doesn't exist , write a new pidfile
         file(pidfile, 'w').write(pid)
 
     # simple usage string
@@ -540,7 +593,7 @@ if __name__ == '__main__':
     # FUZZY
     if options.fuzzy:
         FuzzyHasher()
-    
+
     # Error handling if users are being stupid
     if options.pcapfile and options.directory:
         parser.error("You can not specify both an individual PCAP file and a directory. See --help for more details")
