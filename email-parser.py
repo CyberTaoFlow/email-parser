@@ -319,6 +319,7 @@ class db(object):
                             self.db.execute(statement, (len(attachment.payload), attachment.md5, attachment.sha256, ssdeep_hash, suspicion, zlib.compress(attachment.payload)))
                         except:
                             print "Something went awry, probably too big"
+                            raise
 
                         # Get the ID for the attachment we just uploaded
                         statement = "SELECT LAST_INSERT_ID() AS last_id"
