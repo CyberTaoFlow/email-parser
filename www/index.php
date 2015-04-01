@@ -53,62 +53,64 @@ $currentcpuusage = get_server_cpu_usage();
 				<h1><span>[</span> email<span>-</span>parser<span>.</span>py <span>]</span></h1>
 			</div><!-- logopanel -->
 
-			<!-- <h5 class="sidebartitle">Navigation</h5> -->
-			<ul class="nav nav-pills nav-stacked nav-bracket">
-				<li class="active"><a href="#"><i class="fa fa-home"></i> <span>Dashboard</span></a></li>
-				<li><a href="tables.php"><i class="fa fa-database"></i> <span>Database</span></a></li>
-				<li><a href="inc/submit-indicator.html" data-toggle="modal" data-target=".external-modal"><i class="fa fa-crosshairs"></i> <span>Submit Indicator</span></a></li>
-				<li><a href="#" data-toggle="modal" data-target=".upload-modal"><i class="fa fa-upload"></i> <span>Upload PCAP</span></a></li>
-				<li><a href="suspicion.html" data-toggle="modal" data-target=".external-modal-lg"><i class="fa fa-question"></i> <span>How Suspicion Works</span></a></li>
-			</ul>
-
-			<div class="infosummary">
-				<h5 class="sidebartitle">Other Stats</h5>
-				<ul>
-					<li>
-						<div class="datainfo">
-							<span class="text-muted">DATABASE SIZE</span>
-							<h4><?php echo $dbsize;?> MB</h4>
-						</div>
-					</li>
-					<li>
-						<div class="datainfo">
-							<span class="text-muted">TOTAL ATTACHMENTS IN DATABASE</span>
-							<h4><?php echo $totalattachments;?></h4>
-						</div>
-					</li>
-					<li>
-						<div class="datainfo">
-							<span class="text-muted">TOTAL ANALYZED ATTACHMENTS</span>
-							<h4><?php echo $totalanalyzed;?></h4>
-						</div>
-					</li>
+			<div class="leftpanelinner"
+				<!-- <h5 class="sidebartitle">Navigation</h5> -->
+				<ul class="nav nav-pills nav-stacked nav-bracket">
+					<li class="active"><a href="#"><i class="fa fa-home"></i> <span>Dashboard</span></a></li>
+					<li><a href="tables.php"><i class="fa fa-database"></i> <span>Database</span></a></li>
+					<li><a href="inc/submit-indicator.html" data-toggle="modal" data-target=".external-modal"><i class="fa fa-crosshairs"></i> <span>Submit Indicator</span></a></li>
+					<li><a href="#" data-toggle="modal" data-target=".upload-modal"><i class="fa fa-upload"></i> <span>Upload PCAP</span></a></li>
+					<li><a href="suspicion.html" data-toggle="modal" data-target=".external-modal-lg"><i class="fa fa-question"></i> <span>How Suspicion Works</span></a></li>
 				</ul>
+
+				<div class="infosummary">
+					<h5 class="sidebartitle">Other Stats</h5>
+					<ul>
+						<li>
+							<div class="datainfo">
+								<span class="text-muted">DATABASE SIZE</span>
+								<h4><?php echo $dbsize;?> MB</h4>
+							</div>
+						</li>
+						<li>
+							<div class="datainfo">
+								<span class="text-muted">TOTAL ATTACHMENTS IN DATABASE</span>
+								<h4><?php echo $totalattachments;?></h4>
+							</div>
+						</li>
+						<li>
+							<div class="datainfo">
+								<span class="text-muted">TOTAL ANALYZED ATTACHMENTS</span>
+								<h4><?php echo $totalanalyzed;?></h4>
+							</div>
+						</li>
+					</ul>
+				</div>
+
+				<div class="infosummary">
+					<h5 class="sidebartitle">Server Status</h5>
+					<ul>
+						<li>
+							<span class="sublabel">CPU Usage (<?php echo sprintf("%d", $currentcpuusage);?>%)</span>
+							<div class="progress progress-sm">
+								<div style="width: <?php echo $currentcpuusage; ?>%" aria-valuemax="100" aria-valuemin="0" aria-valuenow="40" role="progressbar" class="progress-bar <?php echo get_progress_bar_style($currentcpuusage); ?>"></div>
+							</div><!-- progress -->
+						</li>
+						<li>
+							<span class="sublabel">Memory Usage (<?php echo sprintf("%d", $currentmemusage);?>%)</span>
+							<div class="progress progress-sm">
+								<div style="width: <?php echo $currentmemusage; ?>%" aria-valuemax="100" aria-valuemin="0" aria-valuenow="40" role="progressbar" class="progress-bar <?php echo get_progress_bar_style($currentmemusage); ?>"></div>
+							</div><!-- progress -->
+						</li>
+						<li>
+							<span class="sublabel">Disk Usage (<?php echo sprintf("%d", $currenthddusage);?>%)</span>
+							<div class="progress progress-sm">
+								<div style="width: <?php echo $currenthddusage; ?>%" aria-valuemax="100" aria-valuemin="0" aria-valuenow="40" role="progressbar" class="progress-bar <?php echo get_progress_bar_style($currenthddusage); ?>"></div>
+							</div><!-- progress -->
+						</li>
+					</ul>
+				</div><!-- infosummary -->
 			</div>
-
-			<div class="infosummary">
-				<h5 class="sidebartitle">Server Status</h5>
-				<ul>
-					<li>
-						<span class="sublabel">CPU Usage (<?php echo sprintf("%d", $currentcpuusage);?>%)</span>
-						<div class="progress progress-sm">
-							<div style="width: <?php echo $currentcpuusage; ?>%" aria-valuemax="100" aria-valuemin="0" aria-valuenow="40" role="progressbar" class="progress-bar <?php echo get_progress_bar_style($currentcpuusage); ?>"></div>
-						</div><!-- progress -->
-					</li>
-					<li>
-						<span class="sublabel">Memory Usage (<?php echo sprintf("%d", $currentmemusage);?>%)</span>
-						<div class="progress progress-sm">
-							<div style="width: <?php echo $currentmemusage; ?>%" aria-valuemax="100" aria-valuemin="0" aria-valuenow="40" role="progressbar" class="progress-bar <?php echo get_progress_bar_style($currentmemusage); ?>"></div>
-						</div><!-- progress -->
-					</li>
-					<li>
-						<span class="sublabel">Disk Usage (<?php echo sprintf("%d", $currenthddusage);?>%)</span>
-						<div class="progress progress-sm">
-							<div style="width: <?php echo $currenthddusage; ?>%" aria-valuemax="100" aria-valuemin="0" aria-valuenow="40" role="progressbar" class="progress-bar <?php echo get_progress_bar_style($currenthddusage); ?>"></div>
-						</div><!-- progress -->
-					</li>
-				</ul>
-			</div><!-- infosummary -->
 		</div><!-- leftpanel -->
 
 		<div class="mainpanel">
