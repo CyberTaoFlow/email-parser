@@ -44,6 +44,25 @@ from logging.handlers import SysLogHandler
 import GeoIP
 # Enables us to perform fuzzy hashing
 import ssdeep
+# Enables us to perform a function when we quit
+import atexit
+
+def exitHandler():
+    with open(pidfile, 'r') as f:
+        data = f.read()
+        if str(os.getpid()) is not data:
+            pass
+        else:
+            print "Deleting pid file"
+            try:
+                os.unlink(pidfile)
+            except:
+                print "Could not delete pidfile"
+
+atexit.register(exitHandler)
+
+# Program PID file
+pidfile = "/tmp/email-parser.pid"
 
 # SMTP heavy lifting
 import parse_smtp
@@ -72,6 +91,7 @@ file_shortcuts = [ ".inf", ".lnk", ".reg",".scf"]
 
 # A list of lists!
 file_extensions = [file_exe, file_google, file_macros, file_script, file_shortcuts]
+
 
 class db(object):
 	# This is the main database class; all interactions with
@@ -220,6 +240,9 @@ class db(object):
                         # Since we have it, has the filename morphed?
                         query = "SELECT COUNT(*) AS count FROM attachment_ref INNER JOIN attachment ON attachment_ref.attachment_id=attachment.id WHERE attachment.md5 = '%s' AND attachment_ref.name != '%s'" % (attachment.md5, MySQLdb.escape_string(attachment.filename))
                         result = self.Action(query, 1)
+			print query
+			print result
+			print
 
                         # Based on the count, adjust suspicion
                         if result['count'] > SUSPICION_IP_THRESHOLD_HIGH:
@@ -227,8 +250,9 @@ class db(object):
                         elif result['count'] > SUSPICION_IP_THRESHOLD_MED:
                             suspicion += 2
                         elif result['count'] > SUSPICION_IP_THRESHOLD_LOW:
-                            suspicion += 1
+                            suspicion += 1 
 
+			print "WINNING!"
                         # Raise the suspicion in the db
                         self.RaiseSuspicion(attachment.md5, suspicion)
 
@@ -406,6 +430,15 @@ def push_syslog(message, local=False):
     # closes (removes the syslog handler)
     logger.removeHandler(sys)
 
+def FuzzyHasher():
+    # Function to print ssdeep compatible fuzzy hashes
+    header = "ssdeep,1.1--blocksize:hash:hash,filename"
+    query = "SELECT name,ssdeep FROM attachment INNER JOIN attachment_ref ON attachment_ref.attachment_id=attachment.id GROUP BY ssdeep"
+    results = db().Action(query)
+    print header
+    for row in results:
+        print row['ssdeep'] + ',"' + row['name'].replace('\r\n','') + '"'
+
 def ZippedAttachment(data):
     # Function to determine if a zipfile contains bad
 
@@ -417,7 +450,10 @@ def ZippedAttachment(data):
     memory_zip = StringIO()
 
     # Initialize the zipfile
-    parent_zipfile = zipfile.ZipFile(file_data)
+    try:
+        parent_zipfile = zipfile.ZipFile(file_data)
+    except:
+        return 15
 
     # Iterate through the files in the zip
     for file in parent_zipfile.namelist():
@@ -450,6 +486,15 @@ def ZippedAttachment(data):
 # reference this script and call on its functions and classes without actually
 # executing the program from scratch
 if __name__ == '__main__':
+    # let's do some pid handling
+    pid = str(os.getpid())
+    
+    if os.path.isfile(pidfile):
+        print "%s already exists" % pidfile
+	sys.exit(1)
+    else:
+        file(pidfile, 'w').write(pid)
+
     # simple usage string
     usage = "usage: %prog [options]"
 
@@ -461,7 +506,7 @@ if __name__ == '__main__':
 
     # Options for main program operation
     # COMMANDS TO TYPE IN -p or --pcap
-    parser.add_option("-p",
+    parser.add_option("-p", "--pcapfile",
                       # Destination variable will be options.pcapfile
                       dest="pcapfile",
                       # Message to show in -h or --help
@@ -480,6 +525,7 @@ if __name__ == '__main__':
 
     dbgroup.add_option("-s", dest="sqlstatement", help="SQL SELECT query to pass to the database")
     dbgroup.add_option("-m", dest="md5sum", help="md5sum of file to retrieve from database")
+    dbgroup.add_option("", "--fuzzy", help="Print fuzzy hashes from the database")
     # Add the database options to OptionParser
     parser.add_option_group(dbgroup)
 
@@ -491,6 +537,10 @@ if __name__ == '__main__':
     # Iterate through all user supplied comand line arguments
     (options, args) = parser.parse_args(sys.argv)
 
+    # FUZZY
+    if options.fuzzy:
+        FuzzyHasher()
+    
     # Error handling if users are being stupid
     if options.pcapfile and options.directory:
         parser.error("You can not specify both an individual PCAP file and a directory. See --help for more details")
@@ -538,6 +588,10 @@ if __name__ == '__main__':
             for row in query_results:
                 print row
         else:
+	    print "DOIN IT ANYWAY"
+	    query_results = db().Action(MySQLdb.escape_string(options.sqlstatement))
+            for row in query_results:
+                print row
             parser.error("SQL statement must begin with SELECT; we don't need yo updates here!")
 
     # Making sure the user's input was an md5 (or at least looks like one)
