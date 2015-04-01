@@ -95,7 +95,7 @@ def exitHandler():
 
     # Compare the current pid to the one we saved earlier
     # if 12345 = 12345
-    if pid = oldpid:
+    if pid == oldpid:
         # try to delete the old pidfile
         try:
             os.unlink(pidfile)
