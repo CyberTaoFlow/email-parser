@@ -53,8 +53,8 @@ $currentcpuusage = get_server_cpu_usage();
 				<h1><span>[</span> email<span>-</span>parser<span>.</span>py <span>]</span></h1>
 			</div><!-- logopanel -->
 
-			<div class="leftpanelinner"
-				<!-- <h5 class="sidebartitle">Navigation</h5> -->
+			<div class="leftpanelinner">
+			<!-- <h5 class="sidebartitle">Navigation</h5> -->
 				<ul class="nav nav-pills nav-stacked nav-bracket">
 					<li class="active"><a href="#"><i class="fa fa-home"></i> <span>Dashboard</span></a></li>
 					<li><a href="tables.php"><i class="fa fa-database"></i> <span>Database</span></a></li>
