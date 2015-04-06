@@ -44,6 +44,7 @@ $columns = array(
     array( 'db' => 'INET_NTOA(ip_src)', 'dt' => 'ip_src' ),
     array( 'db' => 'tcp_sport',         'dt' => 'tcp_sport' ),
     array( 'db' => 'sender',            'dt' => 'sender' ),
+    array( 'db' => 'recipient',         'dt' => 'recipient' ),
     array( 'db' => 'subject',           'dt' => 'subject' ),
     array( 'db' => 'name',              'dt' => 'name' ),
     array( 'db' => 'suspicion',         'dt' => 'suspicion' ),

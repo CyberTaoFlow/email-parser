@@ -153,7 +153,7 @@
 		function format ( d ) {
 			return '<h4>Email Details</h4>' +
 			'Subject: ' + d.subject + '<br />' +
-			'Recipient:' + '<br />' +
+			'Recipient: ' + d.recipient + '<br />' +
 			'<pre>' +
 			'IPAddr:      ' + d.ip_src + '<br />' +
 			'TCP Port:    ' + d.tcp_sport + '<br />' +
