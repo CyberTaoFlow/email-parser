@@ -1,11 +1,11 @@
 /*
  *  Created: @themepixels
  *  Website: http://themepixels.com/
- * 
+ *
  *  ---------------------------------------
  *  ---------- TABLE OF CONTENTS ----------
  *  ---------------------------------------
- *  
+ *
  *  1.  FILE IMPORTS
  *  2.  RESET STYLES
  *  3.  HEADER PANEL
@@ -49,7 +49,7 @@
  *          17.5    STICKY HEADER
  *          17.6    CUSTOM STYLES
  *  18. MEDIA QUERIES
- *  
+ *
  */
 
 
@@ -69,8 +69,6 @@
 @import url('toggles.css');
 @import url('select2.css');
 @import url('lato.css');
-@import url('roboto.css');
-
 
 /********** 2. RESET STYLES **********/
 /*************************************/
@@ -110,15 +108,15 @@ strong {
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: #e4e7ea; 
-    z-index: 10000; 
+    background-color: #e4e7ea;
+    z-index: 10000;
 }
 
 #status {
     width: 30px;
     height: 30px;
     position: absolute;
-    left: 50%; 
+    left: 50%;
     top: 50%;
     margin: -15px 0 0 -15px;
     font-size: 32px;
@@ -579,7 +577,7 @@ strong {
 }
 
 .nav-bracket > li.nav-parent > a {
-    background: transparent url(../images/plus-white.png) no-repeat 92% center; 
+    background: transparent url(../images/plus-white.png) no-repeat 92% center;
 }
 
 .nav-bracket > li.nav-parent > a:focus {
@@ -629,15 +627,15 @@ strong {
 }
 
 .nav-bracket > li.nav-parent.active > a {
-    background-image: url(../images/plus.png); 
+    background-image: url(../images/plus.png);
 }
 
 .nav-bracket > li.nav-active.active > a {
-    background-image: url(../images/minus.png); 
+    background-image: url(../images/minus.png);
 }
 
 .nav-bracket > li.nav-active.active > a:hover {
-    background-image: url(../images/minus.png); 
+    background-image: url(../images/minus.png);
 }
 
 .nav-bracket li .fa,
@@ -1164,7 +1162,7 @@ label.error {
 }
 
 label.error:empty {
-    display: none !important;    
+    display: none !important;
 }
 
 
@@ -1409,7 +1407,7 @@ div.error label.error:before {
     border-radius: 2px;
 }
 
-.jqstooltip{ 
+.jqstooltip{
     min-height: 25px;
     border: 0;
     min-width: 30px;
@@ -1778,7 +1776,7 @@ div.error label.error:before {
 }
 
 .widget-todo .todo-list .todo-form {
-    padding-bottom: 15px;   
+    padding-bottom: 15px;
 }
 
 .widget-todo .todo-list li .btn {
@@ -1841,7 +1839,7 @@ div.error label.error:before {
 }
 
 .nav-email > li > a {
-    color: #444;   
+    color: #444;
 }
 
 .nav-email > li > a > i {
@@ -2635,7 +2633,7 @@ div.error label.error:before {
 
 
 .panel-blog .blog-img img {
-    width: 100%;	
+    width: 100%;
 }
 
 .blogsingle-title {
@@ -2915,7 +2913,7 @@ div.error label.error:before {
 
 
 .nav-sr li {
-    border-bottom: 1px solid #ddd;  
+    border-bottom: 1px solid #ddd;
 }
 
 .nav-sr li a {
@@ -3054,7 +3052,7 @@ div.error label.error:before {
 }
 
 .panel-timeline .panel-body {
-    padding: 0 10px;   
+    padding: 0 10px;
 }
 
 .panel-timeline .panel-heading .media {
@@ -3204,11 +3202,11 @@ div.error label.error:before {
 }
 
 .signinpanel .uname {
-    background: #fff url(../images/user.png) no-repeat 95% center; 
+    background: #fff url(../images/user.png) no-repeat 95% center;
 }
 
 .signinpanel .pword {
-    background: #fff url(../images/locked.png) no-repeat 95% center; 
+    background: #fff url(../images/locked.png) no-repeat 95% center;
 }
 
 .signinpanel .btn {
@@ -3336,7 +3334,7 @@ div.error label.error:before {
 }
 
 .leftpanel-collapsed .nav-bracket {
-    margin: 5px;   
+    margin: 5px;
 }
 
 .leftpanel-collapsed .nav-bracket li a {
@@ -3595,7 +3593,7 @@ div.error label.error:before {
 
 
 .horizontal-menu {
-    margin: 0;   
+    margin: 0;
 }
 
 .horizontal-menu .menutoggle {
@@ -3850,7 +3848,7 @@ div.error label.error:before {
 }
 
 .table-buglist .fa {
-    cursor: pointer;    
+    cursor: pointer;
 }
 
 .table-buglist .fa-bug {
@@ -3984,7 +3982,7 @@ div.error label.error:before {
 }
 
 .stickyheader.leftpanel-collapsed .headerbar {
-    left: 50px;   
+    left: 50px;
 }
 
 .stickyheader.leftpanel-collapsed .header-right {

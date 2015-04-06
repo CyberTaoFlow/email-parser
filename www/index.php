@@ -39,6 +39,11 @@ $currentcpuusage = get_server_cpu_usage();
 	<script src="js/html5shiv.js"></script>
 	<script src="js/respond.min.js"></script>
 	<![endif]-->
+
+	<!-- Needed to keep the datepicker on top of the modal (popup) -->
+	<style>
+		.ui-datepicker{ z-index:1151 !important; }
+	</style>
 </head>
 
 <body>
@@ -57,9 +62,9 @@ $currentcpuusage = get_server_cpu_usage();
 			<!-- <h5 class="sidebartitle">Navigation</h5> -->
 				<ul class="nav nav-pills nav-stacked nav-bracket">
 					<li class="active"><a href="#"><i class="fa fa-home"></i> <span>Dashboard</span></a></li>
-					<li><a href="tables.php"><i class="fa fa-database"></i> <span>Database</span></a></li>
-					<li><a href="table-target.php"><i class="fa fa-bullseye"></i> <span>Target Database</span></a></li>
-					<li><a href="inc/submit-indicator.html" data-toggle="modal" data-target=".external-modal"><i class="fa fa-crosshairs"></i> <span>Submit Indicator</span></a></li>
+					<li><a href="database.php"><i class="fa fa-database"></i> <span>Database</span></a></li>
+					<li><a href="targets.php"><i class="fa fa-bullseye"></i> <span>Target Database</span></a></li>
+					<li><a href="inc/submit-indicator.html" data-toggle="modal" data-target=".external-modal"><i class="fa fa-crosshairs"></i> <span>Submit Target</span></a></li>
 					<li><a href="#" data-toggle="modal" data-target=".upload-modal"><i class="fa fa-upload"></i> <span>Upload PCAP</span></a></li>
 					<li><a href="suspicion.html" data-toggle="modal" data-target=".external-modal-lg"><i class="fa fa-question"></i> <span>How Suspicion Works</span></a></li>
 				</ul>
@@ -319,12 +324,9 @@ $currentcpuusage = get_server_cpu_usage();
 
 	<script src="js/jquery-1.11.1.min.js"></script>
 	<script src="js/jquery-migrate-1.2.1.min.js"></script>
+	<script src="js/jquery-ui-1.10.3.min.js"></script>
 	<script src="js/bootstrap.min.js"></script>
 	<script src="js/modernizr.min.js"></script>
-	<script src="js/jquery.sparkline.min.js"></script>
-	<script src="js/toggles.min.js"></script>
-	<script src="js/retina.min.js"></script>
-	<script src="js/jquery.cookies.js"></script>
 	<script src="js/dropzone.js"></script>
 	<script src="js/jquery.gritter.min.js"></script>
 

@@ -154,7 +154,7 @@ class db(object):
             return False
 
         # Attempts the query
-        # eg: "SELECT id, sender FROM email LIMIT 10"
+        # eg: "SELECT eid, sender FROM email LIMIT 10"
         try:
             self.db.execute(statement)
         # Error out if something went wrong
@@ -180,7 +180,7 @@ class db(object):
         # self.Action(query)
 
         # something like this
-        query = "SELECT COUNT(email.id) AS count FROM attachments INNER JOIN email ON attachments.id=email.id"
+        query = "SELECT COUNT(email.eid) AS count FROM attachments INNER JOIN email ON attachments.id=email.eid"
 
         # self.Action(query)
 
@@ -261,7 +261,7 @@ class db(object):
                         self.Action(statement)
 
                         # Recalculates the count of uniq IP addresses which sent the same file
-                        query = "SELECT COUNT(distinct ip_src) AS count FROM email INNER JOIN attachment_ref ON attachment_ref.email_id=email.id INNER JOIN attachment ON attachment_ref.attachment_id=attachment.id WHERE (attachment.md5 = '%s')" % (attachment.md5)
+                        query = "SELECT COUNT(distinct ip_src) AS count FROM email INNER JOIN attachment_ref ON attachment_ref.email_id=email.eid INNER JOIN attachment ON attachment_ref.attachment_id=attachment.id WHERE (attachment.md5 = '%s')" % (attachment.md5)
                         uniq_ips = self.Action(query, 1)
 
                         # Update the count field in attachments table

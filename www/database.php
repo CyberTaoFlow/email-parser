@@ -1,8 +1,3 @@
-<?php
-	// connect to the database
-	include 'inc/tables-queries.php';
-	include 'inc/tables-functions.php';
-?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -26,6 +21,22 @@
 	<script src="js/html5shiv.js"></script>
 	<script src="js/respond.min.js"></script>
 	<![endif]-->
+	<!-- Needed to keep the datepicker on top of the modal (popup) -->
+	<style>
+		td.details-control {
+			background: url('images/details_open.png') no-repeat center center;
+			cursor: pointer;
+			}
+		tr.details td.details-control {
+			background: url('images/details_close.png') no-repeat center center;
+			}
+		table.dataTable {
+			border-collapse: collapse;
+			width: 100% !important;
+		}
+		<!-- Needed to keep the datepicker on top of the modal (popup) -->
+		.ui-datepicker{ z-index:1151 !important; }
+	</style>
 </head>
 <body class="horizontal-menu">
 	<!-- Preloader -->
@@ -45,8 +56,8 @@
 						<ul class="nav nav-horizontal">
 							<li><a href="index.php"><i class="fa fa-home"></i><span>Dashboard</span></a></li>
 							<li class="active"><a href="#"><i class="fa fa-database"></i><span>Database</span></a></li>
-							<li><a href="table-target.php"><i class="fa fa-bullseye"></i><span>Target Database</span></a></li>
-							<li><a href="inc/submit-indicator.html" data-toggle="modal" data-target=".external-modal"><i class="fa fa-crosshairs"></i> <span>Submit Indicator</span></a></li>
+							<li><a href="targets.php"><i class="fa fa-bullseye"></i><span>Target Database</span></a></li>
+							<li><a href="inc/submit-indicator.html" data-toggle="modal" data-target=".external-modal"><i class="fa fa-crosshairs"></i> <span>Submit Target</span></a></li>
 							<li><a href="#" data-toggle="modal" data-target=".upload-modal"><i class="fa fa-upload"></i> <span>Upload PCAP</span></a></li>
 							<li><a href="suspicion.html" data-toggle="modal" data-target=".external-modal-lg"><i class="fa fa-question"></i> <span>How Suspicion Works</span></a></li>
 						</ul>
@@ -122,12 +133,10 @@
 
 	<script src="js/jquery-1.11.1.min.js"></script>
 	<script src="js/jquery-migrate-1.2.1.min.js"></script>
+	<script src="js/jquery-ui-1.10.3.min.js"></script>
 	<script src="js/bootstrap.min.js"></script>
 	<script src="js/modernizr.min.js"></script>
-	<script src="js/jquery.sparkline.min.js"></script>
-	<script src="js/toggles.min.js"></script>
 	<script src="js/retina.min.js"></script>
-	<script src="js/jquery.cookies.js"></script>
 
 	<script src="js/dropzone.js"></script>
 	<script src="js/jquery.datatables.min.js"></script>
@@ -141,21 +150,90 @@
 			$(this).data('bs.modal', null);
 		});
 
-		$('#the_table').dataTable( {
-			dom: 'Tlf<"clear">rtip',
-			"serverSide": true,
-			"processing": true,
-			"ajax": "inc/tables-ajax.php",
-			"fnRowCallback": function( nRow, aData, iDisplayIndex ) {
-				$('td:eq(1)', nRow).html('<img style="margin-left:5px;" src="flags/' + aData[1] + '.png" />');
-				$('td:eq(5)', nRow).html('<span title="Download Attachment" style="margin-left:10px;" data-placement="top" data-toggle="tooltip" class="tooltips"><a href="inc/getfile.php?md5=' + aData[7] + '">' + aData[5] + '</a></span>');
-				$('td:eq(7)', nRow).html('<span title="Send to Sandbox" style="margin-left:10px;" data-placement="top" data-toggle="tooltip" class="tooltips"><a data-toggle="modal" data-target=".external-modal" href="inc/submit-cuckoo.php?md5=' + aData[7] + '">' + aData[7] + '</a></span>');
-				return nRow;
-			},
-			tableTools: {
-				"sSwfPath": "swf/copy_csv_xls_pdf.swf"
+		function format ( d ) {
+			return '<h4>Email Details</h4>' +
+			'Subject: ' + d.subject + '<br />' +
+			'Recipient:' + '<br />' +
+			'<pre>' +
+			'IPAddr:      ' + d.ip_src + '<br />' +
+			'TCP Port:    ' + d.tcp_sport + '<br />' +
+			'Location:    ' + '<img src="flags/' + d.country + '.png"> ' + d.country + '<br />' +
+			'MD5sum:     <span title="Send to Sandbox" style="margin-left:10px;" data-placement="top" data-toggle="tooltip" class="tooltips"><a data-toggle="modal" data-target=".external-modal" href="inc/submit-cuckoo.php?md5=' + d.md5 + '">' + d.md5 + '</a></span><br />' +
+			'SSDeep:      ' + d.ssdeep + '<br />' +
+			'Attachment: <span title="Download Attachment" style="margin-left:10px;" data-placement="top" data-toggle="tooltip" class="tooltips"><a href="inc/getfile.php?md5=' + d.md5 + '">' + d.name + '</a></span><br />' +
+			'Message body: <br />' +
+			d.message_body + '<br />' +
+			'There will be some more stuff here';
+		};
+
+		$(document).ready(function() {
+			var dt = $('#the_table').DataTable( {
+				dom: 'Tlf<"clear">rtip',
+				"serverSide": true,
+				"processing": true,
+				"ajax": "inc/ajax-database.php",
+				"columns": [
+					{
+					"className":      'details-control',
+					"orderable":      false,
+					"data":           null,
+					"defaultContent": ''
+					},
+					{ "data": "timestamp" },
+					{ "data": "country" },
+					{ "data": "ip_src" },
+					{ "data": "sender" },
+					{ "data": "subject" },
+					{ "data": "name" },
+					{ "data": "suspicion" },
+					{ "data": "count" }
+					],
+					"order": [[1, 'asc']],
+				"fnRowCallback": function( nRow, aData, iDisplayIndex ) {
+					$('td:eq(2)', nRow).html('<img style="margin-left:5px;" src="flags/' + aData['country'] + '.png" />');
+					// $('td:eq(6)', nRow).html('<span title="Download Attachment" style="margin-left:10px;" data-placement="top" data-toggle="tooltip" class="tooltips"><a href="inc/getfile.php?md5=' + aData[8] + '">' + aData['md5'] + '</a></span>');
+					return nRow;
+				},
+				tableTools: {
+					"sSwfPath": "swf/copy_csv_xls_pdf.swf"
+				}
+			});
+
+		// Array to track the ids of the details displayed rows
+		var detailRows = [];
+
+		$('#the_table tbody').on( 'click', 'tr td:first-child', function () {
+			var tr = $(this).closest('tr');
+			var row = dt.row( tr );
+			var idx = $.inArray( tr.attr('id'), detailRows );
+
+			if ( row.child.isShown() ) {
+					tr.removeClass( 'details' );
+					row.child.hide();
+
+					// Remove from the 'open' array
+					detailRows.splice( idx, 1 );
 			}
+			else {
+					tr.addClass( 'details' );
+					row.child( format( row.data() ) ).show();
+
+					// Add to the 'open' array
+					if ( idx === -1 ) {
+							detailRows.push( tr.attr('id') );
+					}
+			}
+		} );
+
+		// On each draw, loop over the `detailRows` array and show any child rows
+		dt.on( 'draw', function () {
+			$.each( detailRows, function ( i, id ) {
+					$('#'+id+' td:first-child').trigger( 'click' );
+			} );
+		} );
+
 		});
+
 
 		// Select2
 		$('select').select2({

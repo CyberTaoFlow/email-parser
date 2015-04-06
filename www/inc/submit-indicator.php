@@ -15,6 +15,9 @@ if (empty($_POST['indicator'])){
   $errors['indicator'] = 'Indicator required';
 }
 
+if (empty($_POST['expiry'])){
+  $errors['expiry'] = 'Expiry date required';
+}
 // if there are errors, return errors to the array
 if ( ! empty($errors)) {
   $data['success'] = false;
@@ -23,7 +26,8 @@ if ( ! empty($errors)) {
   // do SQL things
   $post_type = $db->real_escape_string($_POST['type']);
   $post_indicator = $db->real_escape_string($_POST['indicator']);
-  $sql = "INSERT IGNORE INTO indicators (type, indicator) VALUES ('$post_type','$post_indicator')";
+  $post_expires = $db->real_escape_string($_POST['expiry']);
+  $sql = "INSERT IGNORE INTO target (expires, type, target) VALUES ('$post_expires','$post_type','$post_indicator')";
   $rs = $db->query($sql);
   if ($rs === false){
     // Trigger an error, show the user what went wrong

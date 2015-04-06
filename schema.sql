@@ -20,7 +20,7 @@ DROP TABLE IF EXISTS email,
 select CONCAT('storage engine: ', @@storage_engine) as INFO;
 
 CREATE TABLE email (
-	id              INT          NOT NULL AUTO_INCREMENT,
+	eid             INT          NOT NULL AUTO_INCREMENT,
 	timestamp       TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
 	sessionstart    INT(11)      NOT NULL,
 	country         VARCHAR(25)  NOT NULL,
@@ -34,7 +34,7 @@ CREATE TABLE email (
 	targeted        TINYINT(1)   NOT NULL DEFAULT 0,
 	campaign        INT,
 	message_body    BLOB,
-	PRIMARY KEY (id),
+	PRIMARY KEY (eid),
 	FOREIGN KEY (campaign) REFERENCES campaigns (id)
 );
 
@@ -43,7 +43,7 @@ CREATE TABLE email_recipients (
 	email_id  INT          NOT NULL,
 	recipient VARCHAR(255) NOT NULL,
 	PRIMARY KEY (id, email_id),
-	FOREIGN KEY (email_id) REFERENCES email (id)
+	FOREIGN KEY (email_id) REFERENCES email (eid)
 );
 
 CREATE TABLE attachment (
@@ -52,7 +52,7 @@ CREATE TABLE attachment (
 	size       INT          NOT NULL,
 	md5        CHAR(32)     NOT NULL,
 	sha256     CHAR(64)     NOT NULL,
-  ssdeep     VARCHAR(255) NOT NULL,
+	ssdeep     VARCHAR(255) NOT NULL,
 	count      INT          NOT NULL DEFAULT 1,
 	suspicion  SMALLINT     NOT NULL DEFAULT 0,
 	morphed    SMALLINT     NOT NULL DEFAULT 0,
@@ -68,14 +68,15 @@ CREATE TABLE attachment_ref (
 	attachment_id INT          NOT NULL,
 	name          VARCHAR(255) NOT NULL,
 	PRIMARY KEY (id, email_id, attachment_id),
-	FOREIGN KEY (email_id) REFERENCES email (id),
+	FOREIGN KEY (email_id) REFERENCES email (eid),
 	FOREIGN KEY (attachment_id) REFERENCES attachment (id)
 );
 
-CREATE TABLE indicators (
+CREATE TABLE target (
 	id        INT          NOT NULL AUTO_INCREMENT,
 	timestamp TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
+	expires   TIMESTAMP    NOT NULL,
 	type      CHAR(32)     NOT NULL,
-	indicator VARCHAR(255) NOT NULL,
-	PRIMARY KEY (id, type, indicator)
+	target    VARCHAR(255) NOT NULL,
+	PRIMARY KEY (id, target)
 );
