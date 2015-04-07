@@ -101,7 +101,7 @@ def exitHandler():
             os.unlink(pidfile)
         except:
             # if it doesnt't work, direct the user to /tmp/
-            print "Something went wrong, take a look in /tmp/"
+            print "Something went wrong, you may have to delete the pid manually. See /tmp/email-parser.pid"
     # if 12345 != 12345
     else:
         # Try to see if the program is running
@@ -113,7 +113,7 @@ def exitHandler():
                 os.unlink(pidfile)
         except:
             # If that didn't work, direct the user to /tmp/
-            print "Something went wrong, take a look in /tmp/"
+            print "Could not delete pid file. See /tmp/email-parser.pid"
 
 class db(object):
     ''' This is the main database class. All interactions with
