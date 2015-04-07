@@ -242,6 +242,15 @@ class db(object):
                     statement = "INSERT INTO email_recipients (email_id, recipient) VALUES (%s, '%s')" % (email_id, MySQLdb.escape_string(address))
                     self.Action(statement, 1)
 
+                    # Check if recipient is a watched target
+                    query = "SELECT COUNT(*) AS count FROM target WHERE target LIKE '%s'" % (MySQLdb.escape_string(address))
+                    result = self.Action(query, 1)
+                    
+                    # If the email is a target, flip the database bit
+                    if result['count'] > 0:
+                        statement = "UPDATE email SET targeted = 1 WHERE email_id = %s" % (email_id)
+                        
+
                 # Iterate through the attachments in the email
                 for attachment in email_session.attachments:
                     # Each attachment gets a new suspicion
