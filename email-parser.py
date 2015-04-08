@@ -179,7 +179,7 @@ class db(object):
         days = 6
 
         # Build the query to get the attachment IDs that match the number of days
-        query = "SELECT distinct attachment.id FROM attachment INNER JOIN attachment_ref ON attachment.id=attachment_ref.attachment_id INNER JOIN email ON email.eid=attachment_ref.email_id WHERE rentention = 0 AND timestamp < DATE_SUB(now(), INTERVAL %s DAY)" % (days)
+        query = "SELECT distinct attachment.id FROM attachment INNER JOIN ref ON attachment.id=ref.attachment_id INNER JOIN email ON email.eid=ref.email_id WHERE rentention = 0 AND timestamp < DATE_SUB(now(), INTERVAL %s DAY)" % (days)
 
         # Run the query, store IDs in results
         results = self.Action(query)
@@ -201,7 +201,7 @@ class db(object):
         # the file is saved as its first seen filename
 
         # Construct and action the query
-        query = "SELECT attachment_ref.name AS name, attachment.payload AS payload FROM attachment INNER JOIN attachment_ref ON attachment_ref.attachment_id=attachment.id WHERE md5='%s'" % hash
+        query = "SELECT ref.name AS name, attachment.payload AS payload FROM attachment INNER JOIN ref ON ref.attachment_id=attachment.id WHERE md5='%s'" % hash
         result = self.Action(query, 1)
 
         # Print info to the user
@@ -286,11 +286,11 @@ class db(object):
                         attachment_id = result['id']
 
                         # Update the references table since we have an attachment!
-                        statement = "INSERT INTO attachment_ref (email_id, attachment_id, name) VALUES (%s, %s, '%s')" % (email_id, attachment_id, MySQLdb.escape_string(attachment.filename))
+                        statement = "INSERT INTO ref (email_id, attachment_id, name) VALUES (%s, %s, '%s')" % (email_id, attachment_id, MySQLdb.escape_string(attachment.filename))
                         self.Action(statement)
 
                         # Recalculates the count of uniq IP addresses which sent the same file
-                        query = "SELECT COUNT(distinct ip_src) AS count FROM email INNER JOIN attachment_ref ON attachment_ref.email_id=email.eid INNER JOIN attachment ON attachment_ref.attachment_id=attachment.id WHERE (attachment.md5 = '%s')" % (attachment.md5)
+                        query = "SELECT COUNT(distinct ip_src) AS count FROM email INNER JOIN ref ON ref.email_id=email.eid INNER JOIN attachment ON ref.attachment_id=attachment.id WHERE (attachment.md5 = '%s')" % (attachment.md5)
                         uniq_ips = self.Action(query, 1)
 
                         # Update the count field in attachments table
@@ -307,7 +307,7 @@ class db(object):
                             suspicion += 1
 
                         # Since we have it, has the filename morphed?
-                        query = "SELECT COUNT(*) AS count FROM attachment_ref INNER JOIN attachment ON attachment_ref.attachment_id=attachment.id WHERE attachment.md5 = '%s' AND attachment_ref.name != '%s'" % (attachment.md5, MySQLdb.escape_string(attachment.filename))
+                        query = "SELECT COUNT(*) AS count FROM ref INNER JOIN attachment ON ref.attachment_id=attachment.id WHERE attachment.md5 = '%s' AND ref.name != '%s'" % (attachment.md5, MySQLdb.escape_string(attachment.filename))
                         result = self.Action(query, 1)
 
                         # Based on the count, adjust suspicion
@@ -356,7 +356,7 @@ class db(object):
                         attachment_id = result['last_id']
 
                         # Update the references table since we have a new attachment!
-                        statement = "INSERT INTO attachment_ref (email_id, attachment_id, name) VALUES (%s, %s, '%s')" % (email_id, attachment_id, MySQLdb.escape_string(attachment.filename))
+                        statement = "INSERT INTO ref (email_id, attachment_id, name) VALUES (%s, %s, '%s')" % (email_id, attachment_id, MySQLdb.escape_string(attachment.filename))
                         self.Action(statement)
 
     def RaiseSuspicion(self, md5, new_suspicion):
@@ -513,7 +513,7 @@ def push_syslog(message, local=False):
 def FuzzyHasher():
     # Function to print ssdeep compatible fuzzy hashes
     header = "ssdeep,1.1--blocksize:hash:hash,filename"
-    query = "SELECT name,ssdeep FROM attachment INNER JOIN attachment_ref ON attachment_ref.attachment_id=attachment.id GROUP BY ssdeep"
+    query = "SELECT name,ssdeep FROM attachment INNER JOIN ref ON ref.attachment_id=attachment.id GROUP BY ssdeep"
     results = db().Action(query)
     print header
     for row in results:
