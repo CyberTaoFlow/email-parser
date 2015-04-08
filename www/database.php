@@ -153,17 +153,6 @@
 
 		function format ( d ) {
 			return '<h4>Email Details</h4>' +
-			'<div class="btn-group">' +
-			'<button type="button" class="btn btn-default btn-xs">Email Actions</button>' +
-			'<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown">' +
-			'<span class="caret"></span>' +
-			'<span class="sr-only">Toggle Dropdown</span>' +
-			'</button>' +
-			'<ul class="dropdown-menu" role="menu">' +
-			'<li><a href="inc/getfile.php?md5=12345">Retain email</a></li>' +
-			'<li><a href="inc/submit.php?md5=12345" data-toggle="modal" data-target=".external-modal">Delete email</a></li>' +
-			'</ul>' +
-			'</div>' +
 			'<pre>' +
 			'Subject:     ' + d.subject + '<br />' +
 			'Recipient:   ' + d.recipient + '<br />' +
@@ -174,8 +163,18 @@
 			'SSDeep:      ' + d.ssdeep + '<br />' +
 			'Attachment: <span title="Download Attachment" style="margin-left:10px;" data-placement="top" data-toggle="tooltip" class="tooltips"><a href="inc/getfile.php?md5=' + d.md5 + '">' + d.name + '</a></span><br />' +
 			'Message body: <br /><xmp>' +
-			d.message_body + '</xmp><br />' +
-			'There will be some more stuff here';
+			d.message_body + '</xmp></pre><br />' +
+			'<div class="btn-group">' +
+			'<button type="button" class="btn btn-default btn-xs">Email Actions</button>' +
+			'<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown">' +
+			'<span class="caret"></span>' +
+			'<span class="sr-only">Toggle Dropdown</span>' +
+			'</button>' +
+			'<ul class="dropdown-menu" role="menu">' +
+			'<li><a href="inc/getfile.php?md5=12345">Retain email</a></li>' +
+			'<li><a href="inc/submit.php?md5=12345" data-toggle="modal" data-target=".external-modal">Delete email</a></li>' +
+			'</ul>' +
+			'</div>';
 		};
 
 		$(document).ready(function() {
