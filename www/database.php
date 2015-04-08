@@ -160,12 +160,10 @@
 															<span class="sr-only">Toggle Dropdown</span>
 														</button>
 														<ul class="dropdown-menu" role="menu">
-															<?php
-															echo '<li><a href="inc/getfile.php?md5=', $attachmentmostsuspiciousmd5 . '">Download File</a></li>';
-															echo '<li><a href="inc/submit.php?md5=', $attachmentmostsuspiciousmd5 . '" data-toggle="modal" data-target=".external-modal">Sandbox File</a></li>';
-															?>
+															<li><a href="inc/getfile.php?md5=12345">Download File</a></li>
+															<li><a href="inc/submit.php?md5=12345" data-toggle="modal" data-target=".external-modal">Sandbox File</a></li>
 														</ul>
-													</div><!-- btn-group -->' + 
+													</div><!-- btn-group -->' +
 			'<pre>' +
 			'Subject:     ' + d.subject + '<br />' +
 			'Recipient:   ' + d.recipient + '<br />' +
