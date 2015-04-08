@@ -171,18 +171,30 @@ class db(object):
             return self.db.fetchall()
 
     def CleanUp(self):
-        # Function will remove items from the db based on params below
+        ''' This function will remove attachment payloads to save database space
+        after a certain amount of days. This can be called with ./email-parser.py --cleanup
+        This can probably be ran on a cron if you're croaking for space '''
+
         # Number of days to keep attachment payloads
-        days = 30
+        days = 6
 
-        query = "SELECT COUNT(*) AS count FROM email WHERE timestamp > DATE_SUB(now(), INTERVAL %d DAY)" % (days)
+        # Build the query to get the attachment IDs that match the number of days
+        query = "SELECT distinct attachment.id FROM attachment INNER JOIN attachment_ref ON attachment.id=attachment_ref.attachment_id INNER JOIN email ON email.eid=attachment_ref.email_id WHERE rentention = 0 AND timestamp < DATE_SUB(now(), INTERVAL %s DAY)" % (days)
 
-        # self.Action(query)
+        # Run the query, store IDs in results
+        results = self.Action(query)
 
-        # something like this
-        query = "SELECT COUNT(email.eid) AS count FROM attachments INNER JOIN email ON attachments.id=email.eid"
+        # Iterate through the rows and join the results with a comma
+        # eg. 1,2,3,4,5,6
+        attachment_ids = ",".join(str(row['id']) for row in query_results)
 
-        # self.Action(query)
+        # Prepare the SQL UPDATE statement
+        statement = "UPDATE attachment SET payload = NULL WHERE attachment.id IN (%s)" % (attachment_ids)
+
+        # Run the statement
+        self.Action(statement, 1)
+
+        # Database has been cleaned
 
     def GetFile(self, hash):
         # This function fetches a file from the database
@@ -218,9 +230,18 @@ class db(object):
 
             # Just making sure the email has attachments
             if email_session.attachments:
+
+                # Get the country digraph
+                # eg. us, ca, gb, ru, cn
+                digraph = MySQLdb.escape_string(GetCountry(IPint_to_string(ip_to_uint32(email_session.ip_source))))
+
+                # Get the country name (long)
+                # eg. United States, Canada, Great Britain, Russia, China
+                country = MySQLdb.escape_string(GetCountry(IPint_to_string(ip_to_uint32(email_session.ip_source)), 1))
+
                 # Build the metadata query and action it
-                # eg. INSERT INTO EMAIL (fields) VALUES (143151445, 'ca', '10.13.37.0')
-                statement = "INSERT INTO email (sessionstart, country, ip_src, ip_dst, tcp_sport, tcp_dport, sender, recipients, subject, message_body) VALUES (%d, '%s', %d, %d, %d, %d, '%s', %d, '%s', '%s')" % (int(email_session.timestamp), GetCountry(IPint_to_string(ip_to_uint32(email_session.ip_source))), ip_to_uint32(email_session.ip_source), ip_to_uint32(email_session.ip_dest), email_session.sport, email_session.dport, MySQLdb.escape_string(email_session.sender.address), email_session.recipient_count, MySQLdb.escape_string(email_session.subject), MySQLdb.escape_string(email_session.plaintext))
+                # eg. INSERT INTO EMAIL (fields) VALUES (143151445, 'ca', 'Canada', '10.13.37.0')
+                statement = "INSERT INTO email (sessionstart, digraph, country, ip_src, ip_dst, tcp_sport, tcp_dport, sender, recipients, subject, message_body) VALUES (%d, '%s', '%s', %d, %d, %d, %d, '%s', %d, '%s', '%s')" % (int(email_session.timestamp), digraph, country, ip_to_uint32(email_session.ip_source), ip_to_uint32(email_session.ip_dest), email_session.sport, email_session.dport, MySQLdb.escape_string(email_session.sender.address), email_session.recipient_count, MySQLdb.escape_string(email_session.subject), MySQLdb.escape_string(email_session.plaintext))
                 self.Action(statement)
 
                 # Get Email ID (to reference individual attachments to this email)
@@ -245,11 +266,10 @@ class db(object):
                     # Check if recipient is a watched target
                     query = "SELECT COUNT(*) AS count FROM target WHERE target LIKE '%s'" % (MySQLdb.escape_string(address))
                     result = self.Action(query, 1)
-                    
+
                     # If the email is a target, flip the database bit
                     if result['count'] > 0:
                         statement = "UPDATE email SET targeted = 1 WHERE email_id = %s" % (email_id)
-                        
 
                 # Iterate through the attachments in the email
                 for attachment in email_session.attachments:
@@ -419,7 +439,7 @@ def CheckExtension(filename):
                 return SUSPICION_BAD_EXTENSION
     return 0
 
-def GetCountry(ipaddr):
+def GetCountry(ipaddr, long=0):
     # Function to check the country of an IP address
 
     # Alternate caching methods from GeoIP github
@@ -434,7 +454,10 @@ def GetCountry(ipaddr):
 
     # Try to get the country
     try:
-        country = gi.country_code_by_addr(ipaddr).lower()
+        if long is 1:
+            country = gi.country_name_by_addr(ipaddr)
+        else:
+            country = gi.country_code_by_addr(ipaddr).lower()
     except:
         # exceptions usually occur when the IP address is private
         return "ip"
@@ -600,10 +623,6 @@ if __name__ == '__main__':
     # Iterate through all user supplied comand line arguments
     (options, args) = parser.parse_args(sys.argv)
 
-    # FUZZY
-    if options.fuzzy:
-        FuzzyHasher()
-
     # Error handling if users are being stupid
     if options.pcapfile and options.directory:
         parser.error("You can not specify both an individual PCAP file and a directory. See --help for more details")
@@ -651,10 +670,6 @@ if __name__ == '__main__':
             for row in query_results:
                 print row
         else:
-	    print "DOIN IT ANYWAY"
-	    query_results = db().Action(MySQLdb.escape_string(options.sqlstatement))
-            for row in query_results:
-                print row
             parser.error("SQL statement must begin with SELECT; we don't need yo updates here!")
 
     # Making sure the user's input was an md5 (or at least looks like one)

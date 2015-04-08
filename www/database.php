@@ -153,6 +153,19 @@
 
 		function format ( d ) {
 			return '<h4>Email Details</h4>' +
+			'										<div class="btn-group">
+														<button type="button" class="btn btn-default btn-xs">Action</button>
+														<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown">
+															<span class="caret"></span>
+															<span class="sr-only">Toggle Dropdown</span>
+														</button>
+														<ul class="dropdown-menu" role="menu">
+															<?php
+															echo '<li><a href="inc/getfile.php?md5=', $attachmentmostsuspiciousmd5 . '">Download File</a></li>';
+															echo '<li><a href="inc/submit.php?md5=', $attachmentmostsuspiciousmd5 . '" data-toggle="modal" data-target=".external-modal">Sandbox File</a></li>';
+															?>
+														</ul>
+													</div><!-- btn-group -->' + 
 			'<pre>' +
 			'Subject:     ' + d.subject + '<br />' +
 			'Recipient:   ' + d.recipient + '<br />' +
