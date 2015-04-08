@@ -152,9 +152,19 @@
 		});
 
 		function format ( d ) {
-			return '<h4>Email Details' +
-			'<div class="btn-group"><button type="button" class="btn btn-default btn-xs">Action</button><button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown"><span class="caret"></span><span class="sr-only">Toggle Dropdown</span></button><ul class="dropdown-menu" role="menu"><li><a href="inc/getfile.php?md5=12345">Download File</a></li><li><a href="inc/submit.php?md5=12345" data-toggle="modal" data-target=".external-modal">Sandbox File</a></li></ul></div>' +
-			'</h4><pre>' +
+			return '<h4>Email Details</h4>' +
+			'<div class="btn-group">' +
+			'<button type="button" class="btn btn-default btn-xs">Email Actions</button>' +
+			'<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown">' +
+			'<span class="caret"></span>' +
+			'<span class="sr-only">Toggle Dropdown</span>' +
+			'</button>' +
+			'<ul class="dropdown-menu" role="menu">' +
+			'<li><a href="inc/getfile.php?md5=12345">Retain email</a></li>' +
+			'<li><a href="inc/submit.php?md5=12345" data-toggle="modal" data-target=".external-modal">Delete email</a></li>' +
+			'</ul>' +
+			'</div>' +
+			'<pre>' +
 			'Subject:     ' + d.subject + '<br />' +
 			'Recipient:   ' + d.recipient + '<br />' +
 			'IPAddr:      ' + d.ip_src + '<br />' +
