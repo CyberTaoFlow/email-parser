@@ -1,22 +1,22 @@
 <?php
-// include the graph queries
-include 'inc/index-queries.php';
-include 'inc/index-functions.php';
+	// include the graph queries
+	include 'inc/index-queries.php';
+	include 'inc/index-functions.php';
 
-// UTC is where we work
-date_default_timezone_set('UTC');
-// formatting the delta from now->the last input
-$datenow = new DateTime();
-// OOP method to force the $lastinput var to a DateTime object
-// $lastinput comes from inc/index-queries.php
-$datelastinput = new DateTime($lastinput);
-$interval = $datenow->diff($datelastinput);
-$lastinputago = $interval->format('%d days %h hours %i minutes %S seconds');
+	// UTC is where we work
+	date_default_timezone_set('UTC');
+	// formatting the delta from now->the last input
+	$datenow = new DateTime();
+	// OOP method to force the $lastinput var to a DateTime object
+	// $lastinput comes from inc/index-queries.php
+	$datelastinput = new DateTime($lastinput);
+	$interval = $datenow->diff($datelastinput);
+	$lastinputago = $interval->format('%d days %h hours %i minutes %S seconds');
 
-// gets current usages from inc/index-functions.php
-$currenthddusage = get_disk_usage("/");
-$currentmemusage = get_server_memory_usage();
-$currentcpuusage = get_server_cpu_usage();
+	// gets current usages from inc/index-functions.php
+	$currenthddusage = get_disk_usage("/");
+	$currentmemusage = get_server_memory_usage();
+	$currentcpuusage = get_server_cpu_usage();
 ?>
 <!DOCTYPE html>
 <html lang="en">

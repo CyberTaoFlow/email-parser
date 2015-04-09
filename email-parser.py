@@ -65,7 +65,7 @@ db_name = "mail"
 SUSPICION_THRESHOLD_LOW = 5   # suspicion + 1
 SUSPICION_THRESHOLD_MED = 10  # suspicion + 2
 SUSPICION_THRESHOLD_HIGH = 20 # suspicion + 3
-SUSPICION_BAD_EXTENSION = 3      # suspicion + 3
+SUSPICION_BAD_EXTENSION = 3   # suspicion + 3
 
 # The attachment types we care about (by extension)
 file_exe = [".application", ".com", ".cpl", ".exe", ".gadget", ".hta", ".jar", ".msc", ".msi", ".msp", ".pif", ".scr"]
@@ -157,9 +157,16 @@ class db(object):
         # eg: "SELECT eid, sender FROM email LIMIT 10"
         try:
             self.db.execute(statement)
+
+            # If the statement is going to change the database
+            if statement.startswith(("INSERT", "UPDATE", "DELETE", )):
+                # Commit the transaction
+                self.db.commit()
         # Error out if something went wrong
         except:
-            print "You had an error in your SQL statement.", sys.exc_info()[0]
+            # Roll back the database
+            self.db.rollback()
+            print "You had an error in your SQL statement. Database has been rolled back.", sys.exc_info()[0]
             raise
 
         # If the second argument to Action is 1, return only one row
@@ -335,17 +342,21 @@ class db(object):
                         # Get the ssdeep hash
                         ssdeep_hash = ssdeep.hash(attachment.payload)
 
-                        # Upload the attachment to the database
-                        statement = "INSERT INTO attachment (size, md5, sha256, ssdeep, suspicion, payload) VALUES (%s, %s, %s, %s, %s, %s)"
-                        # Print info (log)
-                        # eg. UPLOADING[6]: BADFILENAME.exe
-                        print "UPLOADING[" + str(suspicion) + "]:", attachment.filename
-
                         # Try to upload the attachment
                         try:
+                            # Prepare the SQL statement
+                            statement = "INSERT INTO attachment (size, md5, sha256, ssdeep, suspicion, payload) VALUES (%s, %s, %s, %s, %s, %s)"
+
+                            # Print info (log)
+                            # eg. UPLOADING[6]: BADFILENAME.exe
+                            print "UPLOADING[" + str(suspicion) + "]:", attachment.filename
+
                             ''' This statement avoids the Action function because it contains funny
                                 binary data and Action was screwing with it '''
                             self.db.execute(statement, (len(attachment.payload), attachment.md5, attachment.sha256, ssdeep_hash, suspicion, zlib.compress(attachment.payload)))
+
+                            # Commit the changes to the database
+                            self.db.commit()
                         except:
                             print "Something went awry, probably too big"
                             raise

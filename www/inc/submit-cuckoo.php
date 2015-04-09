@@ -3,7 +3,7 @@
 	include 'db-connection.php';
 
 	$hash = $_GET["md5"];
-	$sql = "SELECT attachment_ref.name, attachment.payload AS data FROM attachment INNER JOIN attachment_ref ON attachment.id=attachment_ref.attachment_id WHERE attachment.md5='$hash'";
+	$sql = "SELECT attachment_ref.name, attachment.payload AS data FROM attachment INNER JOIN ref ON ref.attachment_id=attachment.id WHERE attachment.md5='$hash'";
 
 	$rs = $db->query($sql);
 	if ($rs === false){
@@ -21,12 +21,12 @@
         $url = 'http://cuckoo/tasks/create/file';
 
 	$fdata = gzuncompress($file['data']);
-	
+
 	$curl_post_data = array(
 		'file' => ';filename="'.$file['name'].'"'.$fdata,
 		'tags' => 'email-parser, suspicious email'
 	);
-	
+
 	$ch = curl_init();
 	curl_setopt($ch, CURLOPT_FAILONERROR, true);
 	curl_setopt($ch, CURLOPT_URL, $url);
@@ -37,7 +37,7 @@
 	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 	$result = curl_exec($ch);
 	curl_close($ch);
-		
+
 
 	echo '<div class="modal-header">';
 	echo '<button aria-hidden="true" data-dismiss="modal" class="close" type="button">&times;</button>';
@@ -53,9 +53,7 @@
 		echo 'Sample of text:';
 		echo '<pre>', substr(nl2br(gzuncompress($file['data'])), 0, 512), '</pre>';
 	}
-	
-	echo '<pre>test: ', $result, '</pre>';
-	
+
 	// todo:
 	// POST attachment to cuckoo API
 	// visual feedback

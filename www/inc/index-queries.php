@@ -56,7 +56,7 @@ if ($rs === false){
 }
 
 // SQL Query to determine the attachment with the highest suspicion
-$sql = 'SELECT attachment_ref.name AS mostbad, attachment.suspicion AS highestsuspicion, attachment.md5 AS mostbadmd5 FROM attachment INNER JOIN attachment_ref ON attachment_ref.attachment_id=attachment.id WHERE attachment.analyzed=0 ORDER BY suspicion DESC LIMIT 1';
+$sql = 'SELECT attachment_ref.name AS mostbad, attachment.suspicion AS highestsuspicion, attachment.md5 AS mostbadmd5 FROM attachment INNER JOIN ref ON ref.attachment_id=attachment.id WHERE attachment.analyzed=0 ORDER BY suspicion DESC LIMIT 1';
 $rs = $db->query($sql);
 if ($rs === false){
   // Trigger an error, show the user what went wrong
@@ -141,7 +141,7 @@ if ($rs === false){
 }
 
 // SQL query for the above's attachments
-$sql = "SELECT attachment_ref.name, attachment.md5 FROM email_recipients RIGHT JOIN attachment_ref ON email_recipients.email_id=attachment_ref.email_id INNER JOIN attachment ON attachment_ref.attachment_id=attachment.id WHERE recipient = '" . $most_targeted . "' ORDER BY name";
+$sql = "SELECT attachment_ref.name, attachment.md5 FROM email_recipients RIGHT JOIN ref ON ref.email_id=email_recipients.email_id INNER JOIN attachment ON attachment.id=ref.attachment_id WHERE recipient = '" . $most_targeted . "' ORDER BY name";
 $rs = $db->query($sql);
 if ($rs === false){
   // Trigger an error, show the user what went wrong
@@ -157,7 +157,7 @@ if ($rs === false){
 }
 
 // SQL query for email by hour
-if(! empty($_GET['graph'])){
+if(isset($_GET['graph'])){
   switch($_GET['graph'])
   {
     case 'hourly':
@@ -180,7 +180,11 @@ if(! empty($_GET['graph'])){
       $graphtime = "Last 24 Hours";
       $sql = "SELECT hour(timestamp) AS time, COUNT(*) AS count FROM email WHERE timestamp > DATE_SUB(now(), INTERVAL 1 DAY) GROUP BY hour(timestamp)";
   }
+} else {
+  $graphtime = "Last 24 Hours";
+  $sql = "SELECT hour(timestamp) AS time, COUNT(*) AS count FROM email WHERE timestamp > DATE_SUB(now(), INTERVAL 1 DAY) GROUP BY hour(timestamp)";
 }
+
 $rs = $db->query($sql);
 if ($rs === false){
   // Trigger an error, show the user what went wrong

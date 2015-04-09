@@ -27,7 +27,7 @@ if (isset($_GET['retain'])){
 if (isset($_GET['delete'])){
   //escape for SQLi
   $delete_id = $db->real_escape_string($_GET['delete']);
-  $sql = "DELETE FROM email WHERE id = '$delete_id' INNER JOIN ref ON email.eid=ref.email_id"
+  $sql = "DELETE FROM email WHERE id = '$delete_id' INNER JOIN ref ON ref.email_id=email.eid"
   $result = $db->query($sql);
   if ($result === false){
     // error out

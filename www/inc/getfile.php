@@ -12,7 +12,7 @@ if(isValidMD5($_GET["md5"])){
 	die("Not a valid MD5");
 }
 
-$sql = "SELECT attachment_ref.name, attachment.payload AS data FROM attachment INNER JOIN attachment_ref ON attachment.id=attachment_ref.attachment_id WHERE attachment.md5='$hash'";
+$sql = "SELECT ref.name, attachment.payload AS data FROM attachment INNER JOIN ref ON ref.attachment_id=attachment.id WHERE attachment.md5='$hash'";
 
 $rs = $db->query($sql);
 if ($rs === false){
