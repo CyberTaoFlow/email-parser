@@ -356,7 +356,7 @@ class db(object):
                             self.db.execute(statement, (len(attachment.payload), attachment.md5, attachment.sha256, ssdeep_hash, suspicion, zlib.compress(attachment.payload)))
 
                             # Commit the changes to the database
-                            self.db.commit()
+                            self.dbCon.commit()
                         except:
                             print "Something went awry, probably too big"
                             raise
