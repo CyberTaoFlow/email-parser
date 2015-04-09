@@ -15,7 +15,7 @@ $rs = $db->query($sql);
 // If something wrong happened with getting the results
 if ($rs === false){
   // Trigger an error, show the user what went wrong
-  trigger_error('Wrong SQL:' . $sql . ' Error: ' . $db->error, E_USER_ERROR);
+  trigger_error('Wrong SQL: ' . $sql . ' Error: ' . $db->error, E_USER_ERROR);
 } else {
   // The data_seek function starts looking (seeking) at an arbitrary row in a result set
   // in this case, we start looking at 0
@@ -42,7 +42,7 @@ $rs = $db->query($sql);
 // If something broke
 if ($rs === false){
   // Trigger an error, show the user what went wrong
-  trigger_error('Wrong SQL:' . $sql . ' Error: ' . $db->error, E_USER_ERROR);
+  trigger_error('Wrong SQL: ' . $sql . ' Error: ' . $db->error, E_USER_ERROR);
 } else {
   // Start at 0
   $rs->data_seek(0);
@@ -56,11 +56,11 @@ if ($rs === false){
 }
 
 // SQL Query to determine the attachment with the highest suspicion
-$sql = 'SELECT attachment_ref.name AS mostbad, attachment.suspicion AS highestsuspicion, attachment.md5 AS mostbadmd5 FROM attachment INNER JOIN ref ON ref.attachment_id=attachment.id WHERE attachment.analyzed=0 ORDER BY suspicion DESC LIMIT 1';
+$sql = 'SELECT ref.name AS mostbad, attachment.suspicion AS highestsuspicion, attachment.md5 AS mostbadmd5 FROM attachment INNER JOIN ref ON ref.attachment_id=attachment.id WHERE attachment.analyzed=0 ORDER BY suspicion DESC LIMIT 1';
 $rs = $db->query($sql);
 if ($rs === false){
   // Trigger an error, show the user what went wrong
-  trigger_error('Wrong SQL:' . $sql . ' Error: ' . $db->error, E_USER_ERROR);
+  trigger_error('Wrong SQL: ' . $sql . ' Error: ' . $db->error, E_USER_ERROR);
 } else {
   $rs->data_seek(0);
   $row = $rs->fetch_assoc();
