@@ -125,10 +125,10 @@ class db(object):
 
         # Try to connect to the database
         try:
-            connection = MySQLdb.connect(host=db_host, user=db_user, passwd=db_pass, db=db_name, port=db_port)
+            self.dbCon = MySQLdb.connect(host=db_host, user=db_user, passwd=db_pass, db=db_name, port=db_port)
             # Sets database cursor to a dictionary so we can reference returns by name
             # eg. row['sender_name'] = Bob
-            self.db = connection.cursor(MySQLdb.cursors.DictCursor)
+            self.db = self.dbCon.cursor(MySQLdb.cursors.DictCursor)
             # Sets database cursor to tuple [default]
             # eg. row[0] = ('sender_name', 'Bob')
             # self.db = connection.cursor()
@@ -161,7 +161,7 @@ class db(object):
             # If the statement is going to change the database
             if statement.startswith(("INSERT", "UPDATE", "DELETE", )):
                 # Commit the transaction
-                self.db.commit()
+                self.dbCon.commit()
         # Error out if something went wrong
         except:
             # Roll back the database
