@@ -158,7 +158,7 @@
 			'Recipient:   ' + d.recipient + '<br />' +
 			'IPAddr:      ' + d.ip_src + '<br />' +
 			'TCP Port:    ' + d.tcp_sport + '<br />' +
-			'Location:    <img src="flags/' + d.country + '.png"> ' + d.country + '<br />' +
+			'Location:    <img src="flags/' + d.digraph + '.png"> ' + d.country + '<br />' +
 			'MD5sum:     <span title="Send to Sandbox" style="margin-left:10px;" data-placement="top" data-toggle="tooltip" class="tooltips"><a data-toggle="modal" data-target=".external-modal" href="inc/submit-cuckoo.php?md5=' + d.md5 + '">' + d.md5 + '</a></span><br />' +
 			'SSDeep:      ' + d.ssdeep + '<br />' +
 			'Attachment: <span title="Download Attachment" style="margin-left:10px;" data-placement="top" data-toggle="tooltip" class="tooltips"><a href="inc/getfile.php?md5=' + d.md5 + '">' + d.name + '</a></span><br />' +
@@ -201,7 +201,7 @@
 					],
 					"order": [[1, 'asc']],
 				"fnRowCallback": function( nRow, aData, iDisplayIndex ) {
-					$('td:eq(2)', nRow).html('<img style="margin-left:5px;" src="flags/' + aData['country'] + '.png" />');
+					$('td:eq(2)', nRow).html('<img style="margin-left:5px;" src="flags/' + aData['digraph'] + '.png" />');
 					// $('td:eq(6)', nRow).html('<span title="Download Attachment" style="margin-left:10px;" data-placement="top" data-toggle="tooltip" class="tooltips"><a href="inc/getfile.php?md5=' + aData[8] + '">' + aData['md5'] + '</a></span>');
 					return nRow;
 				},

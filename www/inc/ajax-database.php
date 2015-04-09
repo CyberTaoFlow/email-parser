@@ -40,6 +40,7 @@ $columns = array(
            }
     ),
     array( 'db' => 'timestamp',         'dt' => 'timestamp' ),
+    array( 'db' => 'digraph',           'dt' => 'digraph' ),
     array( 'db' => 'country',           'dt' => 'country' ),
     array( 'db' => 'INET_NTOA(ip_src)', 'dt' => 'ip_src' ),
     array( 'db' => 'tcp_sport',         'dt' => 'tcp_sport' ),
