@@ -141,7 +141,7 @@ if ($rs === false){
 }
 
 // SQL query for the above's attachments
-$sql = "SELECT attachment_ref.name, attachment.md5 FROM email_recipients RIGHT JOIN ref ON ref.email_id=email_recipients.email_id INNER JOIN attachment ON attachment.id=ref.attachment_id WHERE recipient = '" . $most_targeted . "' ORDER BY name";
+$sql = "SELECT ref.name, attachment.md5 FROM email_recipients RIGHT JOIN ref ON ref.email_id=email_recipients.email_id INNER JOIN attachment ON attachment.id=ref.attachment_id WHERE recipient = '" . $most_targeted . "' ORDER BY name";
 $rs = $db->query($sql);
 if ($rs === false){
   // Trigger an error, show the user what went wrong
